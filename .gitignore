@@ -1,0 +1,16 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+Slides/cache
+Slides/figure
+Slides/*.vrb
+Slides/*.log
+Slides/*.snm
+Slides/*.nav
+Slides/*.bbl
+Slides/*.tex
+Slides/*.gz
+Slides/*.toc
+Slides/*.blg

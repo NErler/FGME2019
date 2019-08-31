@@ -1,0 +1,982 @@
+<<eval = FALSE>>=
+source('Slides/Rscripts/plots_PartI.R')
+@
+
+
+\begin{frame}{Outline of Part I}
+\setlength{\parskip}{0pt}
+% \begin{multicols}{2}
+% \begin{spacing}{1.3}
+% \tableofcontents[part=1]
+% \end{spacing}
+% \vspace*{16ex}
+% \end{multicols}
+\begin{columns}
+\begin{column}{0.5\linewidth}
+\tableofcontents[part=1,sections={1-3}]
+\end{column}
+\begin{column}{0.5\linewidth}
+\tableofcontents[part=1,sections={4-5}]
+\end{column}
+\end{columns}
+
+\end{frame}
+
+
+% Section 1: Multiple Imputation theory ----------------------------------------
+\section{What is Multiple Imputation?}\label{sec:Sec1}
+\subsection{History \& Ideas}\label{subsec:history}
+\begin{frame}[fragile, label=history]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \framesubtitle{What is Multiple Imputation?}
+\begin{itemize}
+\item Developed by \blue{Donald B. Rubin} in the 1970s
+\item to handle missing values in \blue{public use databases}\\
+      (e.g., census data provided by the government),
+\item motivated by the \blue{increase in missing values}, and
+\item increased \blue{availability of computers}.
+\end{itemize}
+
+\bigskip
+
+\pause
+Goal: data should be usable by \cite{Rubin1996}
+\begin{itemize}
+\item a \blue{large number of analysts}, who commonly have to rely on
+\item standard \blue{software that can only handle complete data}, and usually
+\item are \blue{not experts in handling incomplete data}.
+\end{itemize}
+
+% \bigskip
+%
+% \pause
+% Rubin's thoughts:\cite{Rubin2004}
+% \begin{enumerate}[(I)]
+% \item one imputed value can not be correct in general\\
+%       \blue{\ding{225}} we need to represent missing values by a \blue{number of imputations}
+% \item to find \blue{sensible values} to fill in, we need some kind of \blue{model}
+% \end{enumerate}
+\end{frame}
+
+
+\begin{frame}[fragile, label = RubinsIdeas]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Rubin's thoughts:} \cite{Rubin2004}
+\begin{columns}[T, onlytextwidth]
+  \begin{column}{0.47\textwidth}
+    \begin{block}{}
+      One imputed value can not be correct in general.\\
+      \blue{\ding{225}} We need to represent missing values by a
+      \blue{number of imputations}.
+    \end{block}
+    \vspace*{-2ex}
+    \onslide<2->{\centering\scalebox{3}{\rotatebox{-90}{\blue{\ding{225}}}}}
+  \end{column}
+  \begin{column}{0.1\textwidth}
+  \end{column}
+  \begin{column}{0.4\textwidth}
+    \begin{block}{}
+      To find \blue{sensible values} to fill in, we need some kind of \blue{model}.\\
+    \end{block}
+    \vspace*{-2ex}
+    \onslide<2->{\centering\scalebox{3}{\rotatebox{-90}{\blue{\ding{225}}}}}
+  \end{column}
+\end{columns}
+
+\vspace*{-3ex}
+
+\pause
+\begin{columns}[onlytextwidth]
+  \begin{column}{0.47\textwidth}
+    \begin{block}{}
+      \blue{Missing data has a distribution.}
+    \end{block}
+  \end{column}
+  \begin{column}{0.1\textwidth}
+    \centering\raisebox{-3ex}[0ex][0ex]{\scalebox{3}{\blue{\ding{225}}}}
+  \end{column}
+  \begin{column}{0.4\textwidth}
+    \begin{block}{}
+      This \blue{distribution depends on assumptions} that have been made about the model.
+    \end{block}
+  \end{column}
+\end{columns}
+
+\vspace*{1ex}
+
+\pause
+\begin{columns}[onlytextwidth]
+  \begin{column}{0.47\textwidth}
+  \end{column}
+  \begin{column}{0.1\textwidth}
+  \end{column}
+  \begin{column}{0.4\textwidth}
+    \centering\scalebox{3}{\rotatebox{-90}{\blue{\ding{225}}}}
+  \end{column}
+\end{columns}
+
+\begin{block}{}
+What we want is the\\
+\blue{`predictive distribution' of the missing values given the observed values.}
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\textbf{How to obtain that predictive distribution?}\\
+
+\pause
+
+Rubin suggests to
+\begin{itemize}
+\item fit a model to the observed data (``respondents''), and to
+\item obtain for each ``nonrespondent'' the conditional distribution of the
+      missing data (given the observed data) as if he/she was a respondent.
+\end{itemize}
+
+\blue{\ding{225}} We assume nonrespondents are just like respondents, and
+obtain the predictive distribution from the model of the respondents' data.
+
+\vfill
+
+\pause
+\begin{block}{\textbf{Example:} survey about age, gender and height}
+Boys aged 10 -- 12 years old answered (on average) that they are 1.45m tall.\\
+\ding{225} \parbox[t]{\dimexpr\linewidth-5em}{
+  We assume that boys aged 10 to 12 who did not
+  report their height are also around 1.45m tall.}
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\textbf{How to represent the multiple imputed values?}\label{slide:RubinI}\\
+For each missing value, we now have multiple imputed values.
+\begin{itemize}
+\item For each set of imputed values, create a dataset\\
+      (those datasets agree in the observed values but imputed values differ).
+\item Analyse each dataset, and
+\item take the results from each analysis.
+\end{itemize}
+
+\bigskip
+
+\blue{\ding{225}} We can describe how (much) the \blue{results vary between the
+imputed datasets}, and calculate summary measures.
+\end{frame}
+
+
+\subsection{Notation}
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+\begin{block}{}
+\begin{itemize}
+\item $X$: $n \times p$ data matrix with $n$ rows and $p$ variables $x_1,\ldots, x_p$
+\item $X_{obs}$: observed data, $X_{mis}$: missing data
+\item $R$: $n \times p$ missing indicator matrix containing 0 (missing) or 1 (observed)
+\end{itemize}
+\end{block}
+
+
+\begin{columns}[onlytextwidth]
+\begin{column}{0.5\textwidth}
+\begin{center}
+\newcolumntype{g}{>{\columncolor{EMClight}}c}
+$\bmath X$ = \begin{tabular}{|cgcc|}\arrayrulecolor{lightgray}
+\multicolumn{1}{c}{$X_{-2}$} & \textcolor{EMCdark}{$X_2$} & \multicolumn{2}{c}{$X_{-2}$}\\\hline
+$x_{1,1}$ & $x_{1,2}$ & \ldots & $x_{1,p}$\\
+$x_{2,1}$ & $x_{2,2}$ & \ldots & $x_{2,p}$\\
+\vdots    & \vdots    & $\ddots$ & \vdots\\
+$x_{n,1}$ & $x_{n,2}$ & \ldots & $x_{n,p}$\\\hline
+\end{tabular}\\
+\end{center}
+\end{column}
+%
+\begin{column}{0.5\textwidth}
+\begin{center}
+$\bmath R$ = \begin{tabular}{|cccc|}\arrayrulecolor{lightgray}
+\multicolumn{4}{c}{}\\\hline
+$R_{1,1}$ & $R_{1,2}$ & \ldots & $R_{1,p}$\\
+$R_{2,1}$ & $R_{2,2}$ & \ldots & $R_{2,p}$\\
+\vdots    & \vdots    & $\ddots$ & \vdots\\
+$R_{n,1}$ & $R_{n,2}$ & \ldots & $R_{n,p}$\\\hline
+\end{tabular}
+\end{center}
+\end{column}
+\end{columns}
+
+\bigskip
+
+\pause
+\textbf{For example:}
+\begin{columns}[onlytextwidth]
+\begin{column}{0.5\textwidth}
+\begin{center}
+$\bmath X$ =
+\begin{tabular}{ccccc}\arrayrulecolor{lightgray}
+$X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+\checkmark & NA         & \checkmark & \checkmark\\
+\checkmark & \checkmark & NA & NA\\
+\checkmark & NA         & \checkmark & NA\\
+\end{tabular}
+\end{center}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\ding{225} $\bmath R$ =
+\begin{tabular}{|cccc|}\arrayrulecolor{lightgray}
+\hline
+  1 & 0         & 1 & 1\\
+  1 & 1 & 0 & 0\\
+  1 & 0         & 1 & 0\\\hline
+\end{tabular}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\subsection{Missing data mechanisms}
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\begin{columns}[onlytextwidth]
+\begin{column}{0.6\linewidth}
+\begin{block}{Missing Completely At Random (MCAR)}
+\onslide<2->{
+$$p(R\mid X_{obs}, X_{mis}) = P(R)$$
+Missingness is independent of all data
+}
+\end{block}
+
+\begin{block}{Missing At Random (MAR)}
+\onslide<3->{
+$$p(R\mid X_{obs}, X_{mis}) = P(R\mid X_{obs})$$
+Missingness depends only on observed data
+}
+\end{block}
+
+\begin{block}{Missing Not At Random (MNAR)}
+\onslide<4->{
+$$p(R\mid X_{obs}, X_{mis}) \neq P(R \mid X_{obs})$$
+Missingness depends (also) on unobserved data
+}
+\end{block}
+\end{column}\hfill
+\begin{column}{0.35\linewidth}
+\vspace*{2ex}
+\onslide<2->{
+\parbox{\linewidth}{\small
+Questionnaire got lost in mail
+}}
+
+\vspace*{8ex}
+
+\onslide<3->{
+\parbox{\linewidth}{\small
+Overweight participants are less likely to report their chocolate consumption 
+(and we know their weight)
+}}
+
+\vspace*{8ex}
+
+\onslide<4->{
+\parbox{\linewidth}{\small
+overweight participants are less likely to report their weight
+}}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+\begin{itemize}
+\item \blue{MCAR} is a special case of \blue{MAR}
+\item Not possible to distinguish \blue{MNAR} from \blue{MAR} with just the observed data
+\item \blue{Ignorability:} If \blue{M(C)AR} and parameters in missingness model
+      (a priori) independent of parameters in data model missingness process
+      does not need to be modeled
+\item Complete case analysis (mostly) only unbiased in \blue{MCAR}
+\end{itemize}
+\vfill
+\pause
+\blue{Here:} 
+\begin{itemize}
+\item we assume \blue{MAR}, 
+\item focus on missing values in covariates, and
+\item cross-sectional data (for now)
+\end{itemize}
+\end{frame}
+
+
+\subsection{Three steps}
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\begin{center}\vspace*{-3ex}
+\includegraphics[height = 0.6\textheight]{graphics/MI.pdf}
+\end{center}\vspace*{-3ex}
+\begin{block}{In summary:}
+\begin{enumerate}
+\item \blue{Imputation:} impute multiple times \blue{\ding{225}} multiple completed datasets
+\item \blue{Analysis:} analyse each of the datasets
+\item \blue{Pooling:} combine results, taking into account additional uncertainty
+\end{enumerate}
+\end{block}
+\end{frame}
+
+
+
+
+\section{Imputation step}
+\subsection{Univariate missing data}
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\textbf{How can we actually get imputed values?}
+\begin{columns}[onlytextwidth]
+\begin{column}{0.65\textwidth}
+For now: assume only one continuous variable has missing values (\blue{univariate missing data}).
+\end{column}
+%
+\begin{column}{0.35\textwidth}
+\begin{center}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+  \checkmark & NA         & \checkmark & \checkmark\\
+  \checkmark & \checkmark & \checkmark & \checkmark\\
+  \checkmark & NA         & \checkmark & \checkmark\\
+  \vdots     & \vdots     & \vdots     & \vdots
+ \end{tabular}
+}
+\end{center}
+\end{column}
+\end{columns}
+
+\vfill
+
+\begin{columns}[onlytextwidth]
+\begin{column}{0.55\textwidth}
+\onslide<2->{%
+\blue{Idea:} Predict values\\[2ex]
+
+Model:\\
+$x_{i2} = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i3} + \beta_3 x_{i4} + \varepsilon_i$\\[2ex]
+
+
+Imputed/predicted value:\\
+$\hat x_{i2} = \hat\beta_0 + \hat\beta_1 x_{i1} + \hat\beta_2 x_{i3} + \hat\beta_3 x_{i4}$
+}
+\end{column}
+\begin{column}{0.45\textwidth}
+\only<1-2>{
+\includegraphics[width = \linewidth]{figure/emptyplot.pdf}
+}
+\only<3->{
+\animategraphics[loop, autoplay, width = \linewidth]{10}{figure/regimp_movie00}{01}{49}
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Problem:}
+\begin{itemize}
+\item We can obtain \blue{only one imputed value} per missing value,
+      but we wanted a whole distribution.
+\item The predicted values do not take into account the added
+      \blue{uncertainty} due to the missing values.
+\end{itemize}
+
+\bigskip
+
+\pause
+
+\blue{\ding{225}} We need to take into account \blue{two sources of uncertainty}:
+\begin{itemize}
+\item The \blue{parameters} are estimated with \blue{uncertainty}\\
+      (represented by the std. error).
+\item There is \blue{random variation / prediction error}\\
+      (variation of the residuals).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label=BayesianImputationI]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+\textbf{Taking into account uncertainty about the parameters $\bmath \beta$:}\\
+We assume that \blue{$\bmath \beta$ has a distribution},
+and we can sample realizations
+of $\bmath \beta$ from that distribution.
+
+
+% Following the Bayesian framework, $\boldsymbol{\hat\beta}$ is not assumed to be
+% fixed but to have a \blue{distribution $p(\boldsymbol{\hat\beta})$}.
+% By sampling realizations of $\boldsymbol{\hat\beta}$ from that distribution,
+% the \blue{uncertainty about the regression coefficients} is taken into account.
+
+\vfill
+
+\begin{columns}[onlytextwidth]
+\begin{column}{0.5\textwidth}
+\onslide<1->{%
+When plugging the different realizations of $\bmath \beta$ into the predictive
+model, we obtain \blue{slightly different regression lines}.
+}
+
+\bigskip
+
+\onslide<2>{
+With each set of coefficients, we also get slightly \blue{different predicted values}.
+}
+\end{column}
+\begin{column}{0.5\textwidth}
+\only<beamer>{
+\only<-1>{
+\animategraphics[loop, autoplay, width = \linewidth]{5}{figure/reglines_movie00}{01}{50}
+}}
+\only<2->{
+\animategraphics[loop, autoplay, width = \linewidth]{5}{figure/regimps_movie00}{01}{50}
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[label=BayesianImputationII]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\textbf{Taking into account the prediction error:}\\
+The model does not fit the data perfectly: observations are scattered around the regression lines.
+
+\bigskip
+
+\begin{columns}[onlytextwidth]
+\begin{column}{0.5\textwidth}
+We assume that the \blue{data have a distribution}, where
+\begin{itemize}
+\item<1-> the \blue{mean} for each value is given by the \blue{predictive model}, and
+\item<2-> the \blue{variance} is determined by  the variance of the residuals $\bmath\varepsilon$.
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\only<beamer>{
+\only<1>{
+\includegraphics[width = \linewidth]{figure/ranerr_movie0001.png}
+}
+\only<2>{
+\animategraphics[loop, autoplay, width = \linewidth]{1}{figure/ranerr_movie00}{01}{10}
+}}
+\only<3>{
+\includegraphics[width = \linewidth]{figure/ranerrimpsplot.pdf}
+}
+
+\end{column}
+\end{columns}
+\onslide<3> In the end, we obtain one imputed dataset for each color.
+\end{frame}
+
+
+\subsection{Multivariate missing data}\label{subsec:multivarmissing}
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Multivariate missing data:}\\
+What if we have \blue{missing values in more than one variable}?
+
+\vfill
+
+\pause
+\begin{columns}[onlytextwidth]
+\begin{column}{0.65\textwidth}
+In case of \blue{monotone missing values} we can use the technique for univariate missing data in a chain:
+impute $x_4$ given $x_1$\\
+impute $x_3$ given $x_1$ and $x_4$\\
+impute $x_2$ given $x_1$, $x_4$ and $x_3$
+\end{column}
+\begin{column}{0.3\textwidth}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+  \checkmark & NA     & \checkmark & \checkmark\\
+  \checkmark & NA     & NA         & \checkmark\\
+  \checkmark & NA     & NA         & NA\\
+  \vdots     & \vdots & \vdots     & \vdots
+ \end{tabular}
+}
+\end{column}
+\end{columns}
+
+\vfill
+
+\pause
+\begin{columns}[onlytextwidth]
+\begin{column}{0.65\textwidth}
+When we have \blue{non-monotone missing data} there is no sequence without
+conditioning on unobserved values.
+\vfill
+\end{column}
+\begin{column}{0.3\textwidth}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+  \checkmark & NA         & \checkmark & \checkmark\\
+  NA         & \checkmark & NA         & NA\\
+  \checkmark & NA         & \checkmark & NA\\
+  \vdots     & \vdots     & \vdots     & \vdots
+ \end{tabular}
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+
+\begin{frame}[label = jointmodelimp]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+There are \blue{two popular approaches} for the imputation step in
+\blue{multivariate non-monotone} missing data:
+\begin{block}{Fully Conditional Specification}
+\begin{itemize}
+\item Multiple Imputation using Chained Equations (\blue{MICE})
+\item sometimes also: sequential regression
+\item implemented in SPSS, R, Stata, SAS, \ldots
+\item our focus here
+\end{itemize}
+\end{block}
+
+
+\pause
+\begin{block}{Joint Model Imputation}
+(more details later)
+\end{block}
+% \end{column}
+% %
+% \begin{column}{0.55\textwidth}
+% \end{column}
+%
+% \begin{flushright}
+% \includegraphics[height = 0.75\textheight]{graphics/MI-imp-cut.pdf}
+% \end{flushright}
+% \end{column}
+% \end{columns}
+\end{frame}
+
+
+\subsection{FCS/MICE}\label{subsec:micealgorithm}
+% 
+% \begin{frame}{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \blue{MICE} (\blue{M}ultiple \blue{I}mputation using \blue{C}hained \blue{E}quations)
+% or\\
+% \blue{FCS} (multiple imputation using \blue{F}ully \blue{C}onditional \blue{S}pecification)
+% 
+% \bigskip
+% extends univariable imputation to the setting with multivariate non-monotone missingness:
+% 
+% \bigskip
+% 
+% MICE/FCS
+% \begin{itemize}
+% \item imputes multivariate missing data on a variable-by-variable basis,
+% \item using the technique for univariate missing data.
+% \end{itemize}
+% 
+% \bigskip
+% 
+% \pause
+% Moreover, MICE/FCS is
+% \begin{itemize}
+% \item an iterative procedure, specifically
+% \item a Markov Chain Monte Carlo (MCMC) method,
+% \item uses the idea of the Gibbs sampler, and
+% \item is a Gibbs sampler if the conditional distributions are compatible\\
+%       (we will come back to this)
+% \end{itemize}
+% \end{frame}
+% 
+% 
+% \begin{frame}{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% \blue{Markov Chain Monte Carlo}
+% \begin{itemize}
+% \item a technique to \blue{draw samples from a complex probability distribution}
+% \item works via creating a chain of random variables (a Markov chain)\\
+%       \ding{225} The distribution that each element in the chain is sampled from
+%       depends on the value of the previous element.
+% \item When certain conditions are met, the chain eventually stabilizes
+% \item samples of the chain are then a sample from the complex distribution
+% of interest
+% \end{itemize}
+% 
+% \bigskip
+% 
+% \pause
+% \blue{Gibbs sampling}
+% \begin{itemize}
+% \item a MCMC method to obtain a \blue{sample from a multivariate distribution}
+% \item the multivariate distribution is split into a set of univariate full conditional distributions
+% \item a sample from the multivariate distribution can be obtained by repeatedly drawing from each of the univariate distributions
+% \end{itemize}
+% \end{frame}
+
+
+
+\begin{frame}[label = micealgorithm]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+% Algorithm
+\begin{algorithm}[H]
+\caption{MICE algorithm \cite{Buuren2012} for \textbf{one} imputed dataset}
+\algrenewcommand\algorithmicdo{}
+\begin{algorithmic}[1]
+\For{$j$ in $1,\ldots, p$:}
+\Comment{Setup}
+\State \parbox[t]{\dimexpr\linewidth-\algorithmicindent}{
+       Specify imputation model for variable $X_j$\\
+       $p(X_j^{mis}\mid X_j^{obs}, X_{-j}, R)$}
+\State \parbox[t]{\dimexpr\linewidth-\algorithmicindent}{
+        Fill in starting imputations $\dot X_j^0$ by random draws
+        from $X_j^{obs}$.}
+\EndFor
+\uncover<2->{
+\Statex
+\For{$t$ in $1,\ldots, T$:} \Comment{loop through iterations}
+\For{$j$ in $1,\ldots, p$:} \Comment{loop through variables}
+\uncover<3->{
+\State \parbox[t]{\dimexpr\linewidth-\algorithmicindent}{
+       Define currently complete data except $X_j$\\
+       $\dot X_{-j}^t = \left(\dot X_1^t,\ldots, \dot X_{j-1}^t,
+               \dot X_{j+1}^{t-1},\ldots, \dot X_p^{t-1}\right)$.}
+}
+\uncover<4->{
+\State Draw parameters $\dot \theta_j^t\sim p(\theta_j^t \mid X_j^{obs}, \dot X_{-j}^t, R)$.
+}
+\uncover<5->{
+\State Draw imputations $\dot X_j^t \sim p(X_j^{mis}\mid \dot X_{-j}^t, R, \dot\theta_j^t)$.
+}
+\EndFor
+\EndFor
+}
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+
+The imputed values from the \blue{last iteration},
+$$\left(\dot X_1^T, \ldots, \dot X_p^T\right),$$
+are then used to replace the missing values in the original data.
+
+
+\bigskip
+
+One run through the algorithm \blue{\ding{225}} one imputed dataset.
+
+\bigskip
+
+\pause
+\blue{\ding{225}} To obtain $m$ imputed datasets: \blue{repeat $m$ times}
+
+\bigskip
+
+\pause
+\begin{itemize}
+\item the \blue{sequence of imputations} for one missing value (from
+starting value to final iteration) is called a \blue{chain}
+\item Each run through the MICE algorithm produces one chain per missing value.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Why iterations?}
+\begin{itemize}
+\item Imputed values in one variable depend on the imputed values of the other variables
+(Gibbs sampling).
+\item If the starting values (random draws) are far from the actual distribution,
+imputed values from the first few iterations are not draws from the distribution
+of interest.
+\end{itemize}
+
+\bigskip
+
+\pause
+\blue{How many iterations?}\\
+Until \blue{convergence}\\
+= when the sampling distribution does not change any more\\
+(Note: the imputed value will still vary between iterations.)
+
+\bigskip
+
+\blue{How to evaluate convergence?}\\
+The \blue{traceplot} (x-axis: iteration number, y-axis: imputed value) should
+show a horizontal band
+\end{frame}
+
+\subsection{Checking convergence}\label{subsec:convergence}
+\begin{frame}[label = convergence]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\begin{center}
+\includegraphics[width = 0.7\linewidth]{figure/sim_convergence.pdf}
+\end{center}
+
+
+Each chain is the sequence of imputed values (from starting value to final imputed value)
+for the same missing value.
+\end{frame}
+
+
+\begin{frame}[label = convergence2]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+In imputation we have
+\begin{itemize}
+\item several \blue{variables} with missing values (e.g., $p$)
+\item several missing \blue{values} in each of these variables
+\item $m$ \blue{chains} for each missing value
+\end{itemize}
+\blue{\ding{225}} possibly a large number of MCMC chains
+
+\bigskip
+
+To check all chains separately could be very time consuming in large datasets.
+
+\bigskip
+
+\pause
+\blue{Alternative:} Calculate and plot a summary (e.g., the mean) of the imputed
+values over all subjects, separately per chain and variable\\
+\blue{\ding{225}} only $m \times p$ chains to check
+\end{frame}
+
+
+
+\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\includegraphics[width = \linewidth]{figure/convplot1a.pdf}
+\end{frame}
+
+\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+\only<beamer>{
+\only<1>{
+\includegraphics[width = \linewidth]{figure/convplot1b.pdf}
+}
+}
+\only<2|handout:1>{
+\includegraphics[width = \linewidth]{figure/convplot1c.pdf}
+}
+\end{frame}
+
+\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\includegraphics[width = \linewidth]{figure/convplot1d.pdf}
+\end{frame}
+
+<<include = FALSE>>=
+load('workspaces/PartI.RData')
+@
+
+\section{Analysis step}
+\begin{frame}{\thesection. \insertsection}
+Multiple imputed datasets:
+\begin{columns}
+\begin{column}{0.3\linewidth}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+   1.4 & \cellcolor{EMClight} 9.2  & 1.8                      & 2.0\\
+   0.5 & 12.4                      & \cellcolor{EMClight} 2.3 & \cellcolor{EMClight} 0.1\\
+  -0.5 & \cellcolor{EMClight} 10.7 & 2.6                      & \cellcolor{EMClight} -1.6\\
+  \vdots    & \vdots     & \vdots     & \vdots
+ \end{tabular}
+}
+\end{column}
+\begin{column}{0.3\textwidth}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+   1.4 & \cellcolor{EMClight} 13.3 & 1.8                      & 2.0\\
+   0.5 & 12.4                      & \cellcolor{EMClight} 2.1 & \cellcolor{EMClight} 0.6\\
+  -0.5 & \cellcolor{EMClight} 10.2 & 2.6                      & \cellcolor{EMClight} -1.7\\
+  \vdots    & \vdots     & \vdots     & \vdots
+ \end{tabular}
+}
+\end{column}
+\begin{column}{0.3\textwidth}
+\scalebox{0.8}{
+  \begin{tabular}{ccccc}
+  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
+   1.4 & \cellcolor{EMClight} 10.0 & 1.8                      & 2.0\\
+   0.5 & 12.4                      & \cellcolor{EMClight} 2.2 & \cellcolor{EMClight} -1.4\\
+  -0.5 & \cellcolor{EMClight} 8.6  & 2.6                      & \cellcolor{EMClight} -1.0\\
+  \vdots    & \vdots     & \vdots     & \vdots
+ \end{tabular}
+}
+\end{column}
+\end{columns}
+
+\vspace{2ex}
+\pause
+Analysis model of interest, e.g.,
+\begin{beamercolorbox}{block body}
+    $$x_1 = \beta_0 + \beta_1 x_2 + \beta_2 x_3 + \beta_3 x_4$$
+\end{beamercolorbox}
+\vspace*{2ex}
+
+\pause
+Multiple sets of results:
+\begin{columns}
+\begin{column}{0.3\textwidth}
+\begin{tabular}{l|rr}
+& est. & se\\\hline
+\Sexpr{print1}
+\end{tabular}
+\end{column}
+\begin{column}{0.3\textwidth}
+\begin{tabular}{l|rr}
+& est. & se\\\hline
+\Sexpr{print2}
+\end{tabular}
+\end{column}
+\begin{column}{0.3\textwidth}
+\begin{tabular}{l|rr}
+& est. & se\\\hline
+\Sexpr{print3}
+\end{tabular}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+
+
+\section{Pooling}
+\subsection{Why pooling?}
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Recall from slide~\ref{RubinsIdeas}:\\
+We need to represent missing values by a \blue{number of imputations}.\\
+\blue{\ding{225}} $m$ imputed datasets
+
+\bigskip
+
+\pause
+
+From the different imputed datasets we get \blue{different sets of parameter estimates},
+each of them with a standard error, representing the uncertainty about the
+estimate.
+
+\bigskip
+
+\pause
+We want to \blue{summarize} the results and describe
+\blue{how (much) the results vary} between the imputed datasets.
+
+\end{frame}
+
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+In the results from multiply imputed data there are
+\blue{two types of variation/uncertainty}:
+\begin{itemize}
+\item \blue{within} imputation (represented by the confidence intervals)
+\item \blue{between} imputation (horizontal shift between imputations)
+\end{itemize}
+\includegraphics[width = \linewidth]{figure/poolplot1a.pdf}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+To summarize the results, we can take the mean of the results from the separate
+analyses. This is the \blue{pooled point estimate}.
+\only<beamer>{
+\only<1-2>{
+\includegraphics[width = \linewidth]{figure/poolplot1b.pdf}
+}}
+\only<3->{
+\includegraphics[width = \linewidth]{figure/poolplot1c.pdf}
+}
+\onslide<2->{%
+But does the same work for the standard error (or bounds of the CIs)?
+}
+
+\bigskip
+
+\onslide<3->{%
+The averaged CI's (marked in red) seem to underestimate the total variation
+(within + between).
+}
+\end{frame}
+
+
+\subsection{Rubin's Rules}
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+The most commonly used method to pool results from analyses of multiply imputed
+data was introduced by Rubin \cite{Rubin1987}, hence \blue{Rubin's Rules}.
+
+\bigskip
+
+\blue{Notation:}\\
+$m$: number of imputed datasets\\
+$Q_\ell$: quantity of interest (e.g., regr. parameter $\beta$) from $\ell$-th imputation\\
+$U_\ell$: variance of $Q_\ell$ (e.g., $var(\beta) = se(\beta)^2$)
+
+\bigskip
+
+\blue{Pooled parameter estimate:}
+$$\bar Q = \frac{1}{m} \sum_{\ell = 1}^m\hat Q_\ell$$
+\end{frame}
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+The \blue{variance} of the pooled parameter estimate is calculated from the
+\blue{within and between imputation variance}.
+
+
+\bigskip
+
+\blue{Average within imputation variance:}
+$$\bar U = \frac{1}{m} \sum_{\ell = 1}^m \hat U_\ell$$
+
+\bigskip
+\blue{Between imputation variance:}
+$$B = \frac{1}{m-1}\sum_{\ell = 1}^m \left(\hat Q_\ell - \bar Q\right)^T\left(\hat Q_\ell - \bar Q\right)$$
+
+\bigskip
+
+\blue{Total variance:}
+$$T = \bar U + B + B/m$$
+
+\end{frame}
+
+
+\begin{frame}[label=poolingdf]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+The \blue{$(1 - \alpha)$ 100\%  confidence interval} is then
+$$\bar Q \pm t_\nu(\alpha/2)\sqrt{T},$$
+where $t_{\nu}$ is the $\alpha/2$ quantile of the $t$ distribution with 
+$\nu = \left(m - 1\right)\left(1 + r_m^{-1}\right)^2$ degrees of freedom,
+where $r_m  = \frac{\left(B + B/m \right)}{\bar U}$
+is the relative increase in variance that is due to the missing values.
+
+\vfill
+
+\includegraphics[width = \linewidth]{figure/cis_final.pdf}
+\vspace*{-3ex}
+\end{frame}

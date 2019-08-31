@@ -1,0 +1,313 @@
+
+\mode<article>{
+  \usepackage[margin = 1in]{geometry}
+  \usepackage{url}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% theme settings and definitions                                             %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usetheme{Rochester}
+\useinnertheme{rounded}
+
+% settings for navigation symbols and frame number
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\mode<presentation>{
+  \setbeamertemplate{frametitle continuation}[from second][(cont.)]
+}
+
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+
+
+% color definitions for template  ----------------------------------------------
+\setbeamercolor{palette primary}{bg = EMCdark}
+\setbeamercolor{block title}{bg = EMCdark}
+\setbeamercolor{block body}{bg = EMCdark!10!white}
+
+\setbeamercolor{title in head/foot}{bg = EMCdark}
+\setbeamercolor{date in head/foot}{bg = EMCdark}
+% end of color definitions for template ----------------------------------------
+
+
+
+% other template definitions ---------------------------------------------------
+\setbeamertemplate{enumerate items}[default]
+\setbeamercolor*{enumerate item}{fg=EMCdark}
+% end of other template definitions --------------------------------------------
+
+
+
+
+% settings title page ----------------------------------------------------------
+\setbeamertemplate{title page} {
+\vspace*{-1.3cm}
+  \begin{center}
+    \hspace*{-1.12cm}
+    \includegraphics[width = 1.196\linewidth]{graphics/Dots.jpg}
+  \end{center}
+  \vbox to 6.85cm {
+  \vfill
+  \begingroup
+    \centering
+    \begin{beamercolorbox}[sep=15pt,center]{title}
+      \usebeamerfont{title}\inserttitle\par%
+      \ifx\insertsubtitle\@empty%
+      \else%
+        \vskip0.25em%
+        {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+      \fi%
+    \end{beamercolorbox}%
+    \vskip1em\par
+    \begin{beamercolorbox}[sep=8pt,center]{author}
+      \usebeamerfont{author}\textbf\insertauthor
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[sep=2pt,center]{institute}
+      \usebeamerfont{institute}\insertinstitute
+    \end{beamercolorbox}
+    \vskip3ex
+    \begin{beamercolorbox}[sep=12pt,center]{date}
+      \usebeamerfont{date}\insertdate
+    \end{beamercolorbox}
+    \vskip0.5em
+    {\usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}
+  \endgroup
+  \vfill
+  \vspace*{-0.5cm}
+  \hspace*{-1cm}\includegraphics[width = 4cm]{graphics/Logo1.pdf}
+  \vspace*{-0mm}
+  }
+}
+% end of title page definition -------------------------------------------------
+
+
+% definitions for table of contents --------------------------------------------
+\setbeamertemplate{section in toc}[sections numbered]
+
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\leftskip=3.2em\rlap{%
+    \hskip-2em\inserttocsectionnumber.\inserttocsubsectionnumber
+  }\inserttocsubsection\par
+}
+% end defi table of contents ---------------------------------------------------
+
+% settings for start of new part -----------------------------------------------
+\setbeamertemplate{part page}{
+        \begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
+            \usebeamerfont{part title}
+            Part \insertromanpartnumber\\
+            \insertpart\par
+        \end{beamercolorbox}
+}
+
+\AtBeginPart{\frame{\partpage}}
+% end settings for start of new part -------------------------------------------
+
+
+
+% color definitions for template -----------------------------------------------
+\usepackage{xcolor}
+\definecolor{EMCdark}{RGB}{12, 32, 116}
+\definecolor{EMClight}{RGB}{134, 210, 237}
+\definecolor{darkred}{RGB}{204,0,0}
+
+% color for other use ----------------------------------------------------------
+\definecolor{Dark21}{HTML}{1B9E77}
+\definecolor{Dark22}{HTML}{D95f02}
+\definecolor{Dark23}{HTML}{7570B3}
+\definecolor{Dark24}{HTML}{E7298A}
+\definecolor{Dark25}{HTML}{66A61E}
+\definecolor{Dark26}{HTML}{E6AB02}
+\definecolor{Dark27}{HTML}{A6761D}
+\definecolor{Dark28}{HTML}{666666}
+
+
+% packages ---------------------------------------------------------------------
+\usepackage[misc]{ifsym} % for letter symbol
+\usepackage{fontawesome}
+\usepackage{bbding} % for \Envelope
+\usepackage{colortbl} % for highlighting of table
+\usepackage{pifont} % for \ding
+\usepackage{algorithm,algpseudocode}
+\usepackage{float}
+\usepackage[many]{tcolorbox}
+\usepackage{animate}
+
+\usepackage{tikz}
+\usetikzlibrary{fadings,shapes.arrows,shadows}
+\usepackage{xparse}
+\tikzset{arrowfill/.style={#1}}
+\tikzset{arrowstyle/.style n args={3}{fill=#3, text=#2, single arrow,minimum height=#1, single arrow,
+single arrow head extend=.3cm,}}
+\NewDocumentCommand{\tikzfancyarrow}{O{2cm} O{white} O{EMCdark} m}{
+\tikz[baseline=-0.5ex]\node [arrowstyle={#1}{#2}{#3}] {#4};
+}
+
+\usepackage{multicol} % for multicols
+
+% \mode<article>{
+% \usepackage[hidelinks]{hyperref}
+% }
+
+% \definecolor{links}{HTML}{6b2e6b}
+\definecolor{links}{HTML}{8d0c75}
+
+\hypersetup{colorlinks,linkcolor=, urlcolor=links}
+
+\usepackage{ulem} % for various types of underlining
+\usepackage{arydshln}
+\usepackage{booktabs}
+
+% \usepackage{calc}
+% end of packages --------------------------------------------------------------
+
+
+% own definitions --------------------------------------------------------------
+\def\blue#1{\textbf{\color{EMCdark}#1}}
+\newcommand*\myat{{\fontfamily{ptm}\selectfont @}} % used in last slide
+\def\bmath#1{\mathbf{\boldsymbol{#1}}}
+
+\mode<presentation>{
+\resetcounteronoverlays{algorithm} %  to make algorithm overlay aware
+}
+
+
+% R syntax styling (copied from what knitr does) -------------------------------
+\def\Rarg#1{\texttt{\hlkwc{#1}}}
+\def\Rstring#1{\texttt{\hlstr{#1}}}
+\def\Robj#1{\texttt{\hlstd{#1}}}
+\def\Rval#1{\texttt{\hlnum{#1}}}
+\newcommand{\Rfct}[2][]{\texttt{\hlkwd{#2}\hlstd{(#1)}}}
+% end of R syntax styling ------------------------------------------------------
+
+
+
+
+% Title page -------------------------------------------------------------------
+\title[Multiple Imputation]{Multiple Imputation of Missing Data\\in Simple and More Complex Settings}
+\author[N. Erler]{Nicole Erler}
+\institute[Erasmus MC]{Department of Biostatistics, Erasmus MC\\ \url{https://nerler.com}}
+\date{FGME 2019, Kiel\\15 September, 2019}
+% end of title page specifications ---------------------------------------------
+
+
+
+% \setlength{\parskip}{\baselineskip}%
+\setlength{\parindent}{0pt}%
+
+\renewcommand{\hlkwc}[1]{\textcolor[rgb]{0.2,0.4,0.2}{#1}}%
+
+
+\begin{document}
+
+<<setup, include = FALSE, cache = FALSE>>=
+library(knitr)
+knit_hooks$set(par = function(before, options, envir){
+if (before && options$fig.show != 'none')
+  par(mar = c(4, 4, .1, .1), cex.lab = .95, cex.axis = .9, mgp = c(2, .6, 0),
+      tcl = -.3)
+}, crop = hook_pdfcrop)
+
+# opts_chunk$set(fig.align = "center", size = "footnotesize")
+@
+
+\mode<presentation>{
+<<pressetup, include = F>>=
+opts_chunk$set(fig.align = "center", size = "footnotesize")
+projdir <- gsub("Slides", "", getwd())
+@
+}
+
+\mode<article>{
+<<artsetup, include = F>>=
+opts_chunk$set(fig.align = "center")
+projdir <- gsub("Slides", "", getwd())
+@
+}
+
+
+
+\maketitle
+
+\begin{frame}[plain,noframenumbering]
+\titlepage
+\end{frame}
+
+
+<<Part0, child="00_Intro.Rnw", eval = TRUE>>=
+@
+
+
+\part{Multiple Imputation}
+<<Part1a, child="01_WhatIsMI.Rnw", eval = F>>=
+@
+<<Part1b, child="01b_ImputationStep.Rnw", eval = F>>=
+@
+
+\part{Multiple Imputation Workflow}
+<<Part2, child="02_Workflow.Rnw", eval = TRUE>>=
+@
+
+\part{When MICE might fail}
+<<Part3, child="03_WhenMICEfails.Rnw", eval = FALSE>>=
+@
+
+
+\part{Multiple Imputation Strategies}
+<<Part4, child="04_MIStrategies.Rnw", eval = FALSE>>=
+@
+
+
+
+\begin{frame}
+\begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
+\usebeamerfont{part title}
+References
+\end{beamercolorbox}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks=0.9]{References}
+\nocite{*}\footnotesize
+\bibliographystyle{plain}
+\bibliography{references}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<presentation>{
+\setbeamercolor{background canvas}{bg=EMCdark}
+\begin{frame}[plain,noframenumbering]
+\hypersetup{linkcolor=, urlcolor=white}
+  \begin{center}
+    \includegraphics[width = 8cm]{graphics/Logo1DB.pdf}
+
+    \vfill
+
+    \color{white}
+    \begin{tabular}{rl}
+      \textbf{\faEnvelope} & \textbf{n.erler\myat erasmusmc.nl}\\
+      \href{https://twitter.com/N_Erler}{\textbf{\faTwitter}} & \href{https://twitter.com/N_Erler}{\textbf{N\_Erler}}\\
+      \href{https://github.com/nerler}{\textbf{\faGithub}}  & \href{https://github.com/nerler}{\textbf{NErler}}\\
+      \href{https://nerler.com}{\textbf{\faGlobe}}  & \href{https://nerler.com}{\textbf{www.nerler.com}}\\[2ex]
+      \textbf{Dep. Biostatistics:}  & \url{www.erasmusmc.nl/biostatistiek}
+    \end{tabular}
+  \end{center}
+\end{frame}
+}
+\mode<article>{
+\vfill
+\hrule
+\begin{center}
+    \begin{tabular}{rl}
+      \textbf{\faEnvelope} & \textbf{n.erler\myat erasmusmc.nl}\\
+      \href{https://twitter.com/N_Erler}{\textbf{\faTwitter}} & \href{https://twitter.com/N_Erler}{\textbf{N\_Erler}}\\
+      \href{https://github.com/nerler}{\textbf{\faGithub}}  & \href{https://github.com/nerler}{\textbf{NErler}}\\
+      \href{https://nerler.com}{\textbf{\faGlobe}}  & \href{https://nerler.com}{\textbf{www.nerler.com}}\\[2ex]
+      \textbf{Dep. Biostatistics:}  & \url{www.erasmusmc.nl/biostatistiek}
+    \end{tabular}
+  \end{center}
+}
+
+\end{document}
