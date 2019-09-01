@@ -14,3 +14,5 @@ Slides/*.tex
 Slides/*.gz
 Slides/*.toc
 Slides/*.blg
+Slides/*.bcf
+Slides/*.xml

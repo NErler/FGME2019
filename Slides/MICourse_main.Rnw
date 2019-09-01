@@ -105,8 +105,6 @@
 \AtBeginPart{\frame{\partpage}}
 % end settings for start of new part -------------------------------------------
 
-
-
 % color definitions for template -----------------------------------------------
 \usepackage{xcolor}
 \definecolor{EMCdark}{RGB}{12, 32, 116}
@@ -235,15 +233,14 @@ projdir <- gsub("Slides", "", getwd())
 \titlepage
 \end{frame}
 
-
 <<Part0, child="00_Intro.Rnw", eval = TRUE>>=
 @
 
 
 \part{Multiple Imputation}
-<<Part1a, child="01_WhatIsMI.Rnw", eval = F>>=
+<<Part1a, child="01_WhatIsMI.Rnw", eval = TRUE>>=
 @
-<<Part1b, child="01b_ImputationStep.Rnw", eval = F>>=
+<<Part1b, child="01b_ImputationStep.Rnw", eval = FALSE>>=
 @
 
 \part{Multiple Imputation Workflow}
@@ -251,12 +248,12 @@ projdir <- gsub("Slides", "", getwd())
 @
 
 \part{When MICE might fail}
-<<Part3, child="03_WhenMICEfails.Rnw", eval = FALSE>>=
+<<Part3, child="03_WhenMICEfails.Rnw", eval = TRUE>>=
 @
 
 
 \part{Multiple Imputation Strategies}
-<<Part4, child="04_MIStrategies.Rnw", eval = FALSE>>=
+<<Part4, child="04_MIStrategies.Rnw", eval = T>>=
 @
 
 
@@ -270,7 +267,8 @@ References
 
 
 \begin{frame}[allowframebreaks=0.9]{References}
-\nocite{*}\footnotesize
+% \nocite{*}
+\footnotesize
 \bibliographystyle{plain}
 \bibliography{references}
 \end{frame}
@@ -291,7 +289,6 @@ References
       \href{https://twitter.com/N_Erler}{\textbf{\faTwitter}} & \href{https://twitter.com/N_Erler}{\textbf{N\_Erler}}\\
       \href{https://github.com/nerler}{\textbf{\faGithub}}  & \href{https://github.com/nerler}{\textbf{NErler}}\\
       \href{https://nerler.com}{\textbf{\faGlobe}}  & \href{https://nerler.com}{\textbf{www.nerler.com}}\\[2ex]
-      \textbf{Dep. Biostatistics:}  & \url{www.erasmusmc.nl/biostatistiek}
     \end{tabular}
   \end{center}
 \end{frame}
@@ -305,7 +302,6 @@ References
       \href{https://twitter.com/N_Erler}{\textbf{\faTwitter}} & \href{https://twitter.com/N_Erler}{\textbf{N\_Erler}}\\
       \href{https://github.com/nerler}{\textbf{\faGithub}}  & \href{https://github.com/nerler}{\textbf{NErler}}\\
       \href{https://nerler.com}{\textbf{\faGlobe}}  & \href{https://nerler.com}{\textbf{www.nerler.com}}\\[2ex]
-      \textbf{Dep. Biostatistics:}  & \url{www.erasmusmc.nl/biostatistiek}
     \end{tabular}
   \end{center}
 }

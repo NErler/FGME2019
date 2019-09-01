@@ -2,6 +2,7 @@ library(MASS)
 library(RColorBrewer)
 library(ggplot2)
 library(gganimate)
+library(plyr)
 
 
 # simulate data ----------------------------------------------------------------
@@ -299,7 +300,10 @@ ggplot(melt(x[d:nrow(x), ]), aes(x = Var1, y = value,
                      labels = paste("chain", 1:3)) +
   theme_light() +
   theme(legend.position = c(0.9, 0.15),
-        legend.background = element_rect(fill = 'transparent')) +
+        legend.background = element_rect(fill = 'transparent'),
+        panel.grid = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
   xlab("iteration")
 ggsave(file = 'Slides/figure/sim_convergence.pdf', width = 6, height = 4)
 

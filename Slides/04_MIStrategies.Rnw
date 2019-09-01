@@ -1,6 +1,6 @@
-\begin{frame}{Outline of Part IV}
-\tableofcontents[part=4]
-\end{frame}
+% \begin{frame}{Outline of Part IV}
+% \tableofcontents[part=4]
+% \end{frame}
 
 
 <<setup04, echo = FALSE>>=
@@ -13,76 +13,6 @@ options(knitr.kable.NA = '')
 
 
 \section{Strategies for using MICE}
-\subsection{Imputation methods}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-We have focussed on a few imputation methods that cover the most common
-types of data
-% (\Rstring{"norm", "pmm", "midastouch", "logreg", "polyeg", "polr",
-% "2lonly.norm", "2lonly.pmm"}),
-but there are many more methods implemented.
-
-\bigskip
-
-Imputation methods implemented in the \textbf{mice} package:\vspace*{-1ex}
-<<getmicemeths, echo = FALSE, warning = FALSE, results = 'asis'>>=
-used <- paste0("mice.impute.",
-                c("norm", "pmm", "midastouch", "logreg", "polyreg", "polr",
-                  "2lonly.norm", "2lonly.pmm", "quadratic")
-)
-
-mentioned <- paste0("mice.impute.",
-                c("2l.lmer", "2l.bin", "2l.norm", "2l.pan", "2lonly.mean", "passive",
-                  "logreg.boot", "norm.boot", "norm.predict")
-)
-
-
-micemeth <- sort(grep("mice.impute", getNamespaceExports("mice"), value = TRUE)) %>%
-    cell_spec("latex", color = ifelse(. %in% used, "blue",
-                                      ifelse(. %in% mentioned, "green!40!black", "black")))
-
-
-methtab1 <- matrix(data = c(micemeth, rep(NA, length(micemeth) %% 3)),
-                   ncol = 3)
-
-methtab1 %>%
-  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
-  kable_styling(position = "center")
-@
-\blue{Note:} \parbox[t]{0.75\linewidth}{Just because a method is implemented does
-                                    not mean you need to / should use it.}
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Imputation methods implemented in the \textbf{miceadds} package:
-<<getmiceaddsmeths, echo = FALSE, warning = FALSE>>=
-miceaddsmeth <- sort(grep("mice.impute", getNamespaceExports("miceadds"), value = TRUE))
-methtab2 <- matrix(data = c(miceaddsmeth, rep(NA, length(miceaddsmeth) %% 2)),
-                   ncol = 2)
-
-
-methtab2 %>%
-  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
-  kable_styling(position = "center")
-@
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Imputation methods implemented in the \textbf{micemd} package:
-<<getmicemdmeths, echo = FALSE, warning = FALSE>>=
-micemdmeth <- sort(grep("mice.impute", getNamespaceExports("micemd"), value = TRUE))
-methtab2 <- matrix(data = c(micemdmeth, rep(NA, length(micemdmeth) %% 2)),
-                   ncol = 2)
-
-
-methtab2 %>%
-  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
-  kable_styling(position = "center")
-@
-\end{frame}
-
 
 \subsection{Tips \& Tricks}
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -296,8 +226,9 @@ Moreover
 
 
 
-\section{MICE and MI in the bigger picture}
-\subsection{Other R packages that do imputation}
+\section{Imputation Software}
+
+\subsection{R packages dealing with incomplete data}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 <<getallpkgs, echo = FALSE>>=
@@ -331,11 +262,6 @@ res2 <- lapply(lapply(res, unlist), unique)
 
 @
 
-In Part III of this course we have seen some
-\textsf{R} packages that perform imputation or provide functionality for
-missing data other than \textbf{mice}.
-
-\bigskip
 
 Currently, there are \blue{\Sexpr{length(res2$missing)} packages} available on CRAN that
 use the word \blue{``missing''} in either the title or description of the package,
@@ -345,69 +271,145 @@ use either \blue{``impute'' or ``imputation''} and
 
 \bigskip
 
-Not all of these packages perform imputation or are useful for our purposes,
-but even if we excluded those packages, the number of useful packages for
-dealing with missing data would still be to large to mention them all.
-
-\bigskip
-
 \blue{\ding{225} The mice package is often a good option, but certainly not the
 only option to perform imputation!}
-\end{frame}
+% \end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\bigskip 
+
 \blue{CRAN Task View on Missing Data:}
 
 \href{https://cran.r-project.org/web/views/MissingData.html}{https://cran.r-project.org/web/views/MissingData.html}
 
 \begin{itemize}
-\item gives an overview on the available \textsf{R} packages for missing data / imputation
-\item good point to start when searching for a package with a particular functionality
+\item overview on the available \textsf{R} packages for missing data
+\item good starting point when searching for a package with a particular functionality
 \end{itemize}
 
 \end{frame}
 
-
-\subsection{Imputation in other software}
+\subsection{Imputation methods}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-In this second half of the course, we have focused on (multiple) imputation
-using \textsf{R}.
+We have focussed on a few imputation methods that cover the most common
+types of data
+% (\Rstring{"norm", "pmm", "midastouch", "logreg", "polyeg", "polr",
+% "2lonly.norm", "2lonly.pmm"}),
+but there are many more methods implemented.
 
 \bigskip
 
-Naturally, \textsf{R} is not the only statistical software that can perform
-multiple imputation.
-\begin{itemize}
-\item \blue{Stata, SAS and MPLUS} provide packages/functions to perform multiple
-      imputation and pool the results.
-\item There are macros and additional packages available, e.g.,
-      \blue{smcfcs} is implemented for \blue{Stata} as well
-\item \blue{SPSS} provides some functionality to perform MI
-\end{itemize}
+Imputation methods implemented in the \textbf{mice} package:\vspace*{-1ex}
+<<getmicemeths, echo = FALSE, warning = FALSE, results = 'asis'>>=
+used <- paste0("mice.impute.",
+                c("norm", "pmm", "midastouch", "logreg", "polyreg", "polr",
+                  "2lonly.norm", "2lonly.pmm", "quadratic")
+)
+
+mentioned <- paste0("mice.impute.",
+                c("2l.lmer", "2l.bin", "2l.norm", "2l.pan", "2lonly.mean", "passive",
+                  "logreg.boot", "norm.boot", "norm.predict")
+)
+
+
+micemeth <- sort(grep("mice.impute", getNamespaceExports("mice"), value = TRUE))
+
+methtab1 <- matrix(data = c(micemeth, rep(NA, length(micemeth) %% 3)),
+                   ncol = 3)
+
+methtab1 %>%
+  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
+  kable_styling(position = "center")
+@
+\blue{Note:} \parbox[t]{0.75\linewidth}{Just because a method is implemented does
+                                    not mean you need to / should use it.}
 \end{frame}
 
-\subsection{Other approaches to handle missing values}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Finally, we should not forget that
-\blue{MICE is not the only method to handle missing values}.
+Imputation methods implemented in the \textbf{miceadds} package:
+<<getmiceaddsmeths, echo = FALSE, warning = FALSE>>=
+miceaddsmeth <- sort(grep("mice.impute", getNamespaceExports("miceadds"), value = TRUE))
+methtab2 <- matrix(data = c(gsub("_", "\\_", miceaddsmeth, fixed = TRUE),
+                            rep(NA, length(miceaddsmeth) %% 2)),
+                   ncol = 2)
 
-\bigskip
 
-Besides MICE, \blue{multiple imputation} can be performed in a
-\blue{joint model approach} (as for instance implemented in the \textsf{R}
-package \textbf{jomo}).
-
-\bigskip
-
-Furthermore,
-\begin{itemize}
-\item \blue{direct likelihood methods},
-\item \blue{fully Bayesian methods} (as implemented in \textbf{JointAI}), or
-\item \blue{weighted estimating equations}
-\end{itemize}
-are valid alternative approaches when data are incomplete.
-
+methtab2 %>%
+  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
+  kable_styling(position = "center")
+@
 \end{frame}
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Imputation methods implemented in the \textbf{micemd} package:
+<<getmicemdmeths, echo = FALSE, warning = FALSE>>=
+micemdmeth <- sort(grep("mice.impute", getNamespaceExports("micemd"), value = TRUE))
+methtab2 <- matrix(data = c(micemdmeth, rep(NA, length(micemdmeth) %% 2)),
+                   ncol = 2)
+
+
+methtab2 %>%
+  kable(format = "latex", booktabs = TRUE, linesep = "", escape = F) %>%
+  kable_styling(position = "center")
+@
+\end{frame}
+
+\subsection{Packages worth mentioning}
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Besides \blue{JointAI}, there are more alternatives for imputation in complex settings:
+
+\begin{itemize}
+\item \blue{smcfcs:} substantive model compatible fully conditional specification (in GLMs \& survival models)
+\item \blue{jomo:} Joint model MI (GLMs, GLMMs, Cox, ordinal mixed model)
+\item \blue{mdmb:} model based missing data models (linear, logistic, multi-level)
+\end{itemize}
+\end{frame}
+ 
+% \subsection{Imputation in other software}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% In this second half of the course, we have focused on (multiple) imputation
+% using \textsf{R}.
+% 
+% \bigskip
+% 
+% Naturally, \textsf{R} is not the only statistical software that can perform
+% multiple imputation.
+% \begin{itemize}
+% \item \blue{Stata, SAS and MPLUS} provide packages/functions to perform multiple
+%       imputation and pool the results.
+% \item There are macros and additional packages available, e.g.,
+%       \blue{smcfcs} is implemented for \blue{Stata} as well
+% \item \blue{SPSS} provides some functionality to perform MI
+% \end{itemize}
+% \end{frame}
+
+% \subsection{Other approaches to handle missing values}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% Finally, we should not forget that
+% \blue{MICE is not the only method to handle missing values}.
+% 
+% \bigskip
+% 
+% Besides MICE, \blue{multiple imputation} can be performed in a
+% \blue{joint model approach} (as for instance implemented in the \textsf{R}
+% package \textbf{jomo}).
+% 
+% \bigskip
+% 
+% Furthermore,
+% \begin{itemize}
+% \item \blue{direct likelihood methods},
+% \item \blue{fully Bayesian methods} (as implemented in \textbf{JointAI}), or
+% \item \blue{weighted estimating equations}
+% \end{itemize}
+% are valid alternative approaches when data are incomplete.
+% 
+% \end{frame}

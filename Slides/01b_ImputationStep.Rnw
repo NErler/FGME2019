@@ -255,13 +255,13 @@ are compared.
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 \blue{The steps in PMM:}
 \begin{enumerate}
-\item Obtain parameter estimates for $\bmath{\hat\beta}$ and $\hat\sigma$ (see later)
+\item Obtain parameter estimates for $\bmath{\hat\beta}$ and $\hat\sigma$
 \item Calculate the predicted values for the observed cases
       $$\bmath{\hat y}_{obs} = \bmath{X}_{obs} \bmath{\hat\beta}$$
 \item Calculate the predicted value for the missing cases
       $$\bmath{\hat y}_{mis} = \bmath{X}_{mis} \bmath{\hat\beta}$$
 \item For each missing value, find $d$ donor candidates that fulfill a given
-      criterium (details on the next slide).
+      criterium.
 \item Randomly select one of the donors.
 \end{enumerate}
 \end{frame}
@@ -304,8 +304,6 @@ difference $\eta$) to be specified. Common choices for $d$ are 3, 5 or 10.
 }
 \item<3-> Therefore, using $d = 1$ (selection criterion 1.) is not a
           good idea. On the other hand, using too many candidates can lead to bad matches.
-\item<4-> Schenker and Taylor \cite{Schenker1996} proposed an adaptive procedure
-          to select $d$, but it is not used much in practice.
 \end{itemize}
 \end{frame}
 
@@ -322,7 +320,7 @@ Type-0 & $\hat\beta_{LS/ML}$ (least squares or maximum likelihood) are used in
           both prediction models\\[2ex]
 Type-I & $\hat\beta_{LS/ML}$ to predict $\hat y_{obs}$;
           $\tilde\beta_{B/BS}$ (Bayesian or bootstrapped) to predict $\hat y_{mis}$\\[2ex]
-Type-II & $\tilde\beta$ to predict $\hat y_{obs}$ as well as $\hat y_{mis}$\\[2ex]
+Type-II & $\tilde\beta_{B/BS}$ to predict $\hat y_{obs}$ as well as $\hat y_{mis}$\\[2ex]
 Type-III & different draws $\tilde\beta^{(1)}_{B/BS}$ and $\tilde\beta^{(2)}_{B/BS}$
            to predict $\hat y_{obs}$ and $\hat y_{mis}$, respectively
 \end{tabular}

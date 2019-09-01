@@ -7,19 +7,19 @@ NHANES <- subset(NHANES, select = -DBP)
 @
 
 
-\begin{frame}{Outline of Part II}
-\setlength{\parskip}{0pt}
-\vspace*{-6ex}
-\begin{columns}
-\begin{column}{0.45\linewidth}
-\tableofcontents[part=2,sections={6-7}]
-\end{column}
-\begin{column}{0.55\linewidth}
-\tableofcontents[part=2,sections={8-11}]
-\end{column}
-\end{columns}
-\vspace*{-6ex}
-\end{frame}
+% \begin{frame}{Outline of Part II}
+% \setlength{\parskip}{0pt}
+% \vspace*{-6ex}
+% \begin{columns}
+% \begin{column}{0.45\linewidth}
+% \tableofcontents[part=2,sections={6-7}]
+% \end{column}
+% \begin{column}{0.55\linewidth}
+% \tableofcontents[part=2,sections={8-11}]
+% \end{column}
+% \end{columns}
+% \vspace*{-6ex}
+% \end{frame}
 
 
 
@@ -67,7 +67,9 @@ options('width' = op)
 <<JointAI_md_pattern, eval = FALSE>>=
 JointAI::md_pattern(NHANES)
 @
+\begin{center}
 \includegraphics[width = 0.8\linewidth]{figure/JointAI_mdpat.pdf}
+\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -75,7 +77,7 @@ JointAI::md_pattern(NHANES)
 <<VIM_aggr, eval = FALSE>>=
 VIM::aggr(NHANES, prop = TRUE, numbers = FALSE)
 @
-\includegraphics[width = 0.95\linewidth]{figure/VIM_mdpat.pdf}
+\centering\includegraphics[width = 0.95\linewidth]{figure/VIM_mdpat.pdf}
 \end{frame}
 
 
@@ -606,13 +608,13 @@ visitSeq
 The \Rarg{visitSequence} may specify that a column is visited multiple times
 during one iteration. All incomplete variables must be visited at least once.
 
-\bigskip
-
-\pause
-\Rarg{visitSequence} can also be specified using one of the keywords
-\Rstring{"roman"} (left to right), \Rstring{"arabic"} (right to left),
-\Rstring{"monotone"} (sorted in increasing amount of missingness),
-\Rstring{"revmonotone"} (reverse of monotone).
+% \bigskip
+% 
+% \pause
+% \Rarg{visitSequence} can also be specified using one of the keywords
+% \Rstring{"roman"} (left to right), \Rstring{"arabic"} (right to left),
+% \Rstring{"monotone"} (sorted in increasing amount of missingness),
+% \Rstring{"revmonotone"} (reverse of monotone).
 \end{frame}
 
 
@@ -665,18 +667,18 @@ As a \blue{consequence}
 \end{frame}
 
 
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{A note}
-
-\begin{quote}
-``Please realize that these choices are always needed. Imputation software
-needs to make default choices. These choices are intended to be useful across
-a wide range of applications. However, the \blue{default choices are not necessarily
-the best for the data at hand. There is simply no magical setting that always
-works}, so often some tailoring is needed.'' \cite[p. 124]{Buuren2012}
-\end{quote}
-\end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{A note}
+% 
+% \begin{quote}
+% ``Please realize that these choices are always needed. Imputation software
+% needs to make default choices. These choices are intended to be useful across
+% a wide range of applications. However, the \blue{default choices are not necessarily
+% the best for the data at hand. There is simply no magical setting that always
+% works}, so often some tailoring is needed.'' \cite[p. 124]{Buuren2012}
+% \end{quote}
+% \end{frame}
 
 \begin{frame}
 \begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
@@ -746,27 +748,27 @@ With columns\\[2ex]
 
 
 \subsection{Convergence}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-
-\mode<presentation>{
-Recall from slides~\ref{micealgorithm} and \ref{convergence}:
-}
-\mode<article>{
-Recall from Sections~\ref{subsec:micealgorithm} and \ref{subsec:convergence}:
-}
-\textbf{mice} uses an \blue{iterative algorithm} and imputations from the first few
-iterations may not be samples from the ``correct'' distributions.
-
-\bigskip
-
-\blue{Traceplots} can be used to visually assess \blue{convergence}.\bigskip
-
-
-In \textbf{mice}, the
-function \Rfct{plot} produces traceplots of the  mean and standard deviation
-(across subjects) per incomplete variable (see slide~\ref{convergence_multiple}).
-\end{frame}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% \mode<presentation>{
+% Recall from slides~\ref{micealgorithm} and \ref{convergence}:
+% }
+% \mode<article>{
+% Recall from Sections~\ref{subsec:micealgorithm} and \ref{subsec:convergence}:
+% }
+% \textbf{mice} uses an \blue{iterative algorithm} and imputations from the first few
+% iterations may not be samples from the ``correct'' distributions.
+% 
+% \bigskip
+% 
+% \blue{Traceplots} can be used to visually assess \blue{convergence}.\bigskip
+% 
+% 
+% In \textbf{mice}, the
+% function \Rfct{plot} produces traceplots of the  mean and standard deviation
+% (across subjects) per incomplete variable.
+% \end{frame}
 
 \begin{frame}[fragile, allowframebreaks]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
@@ -847,46 +849,47 @@ imputed values of \Rstring{hgt} are smaller than the observed values.
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-In some cases differences in distributions can be explained by strata in the
+In some cases, differences in distributions can be explained by strata in the
 data, however, here, \Rstring{gender} does not explain the difference in
 observed and imputed values.
+
 <<densityplot2, fig.width = 9, fig.height = 5, out.width = "80%">>=
 densityplot(imp2, ~hgt|gender, plot.points = TRUE)
 @
 \end{frame}
 
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-As an alternative, we might consider \Rstring{race} to explain the differences
-<<densityplot fail, fig.width = 9, fig.height = 5>>=
-densityplot(imp2, ~hgt|race)
-@
-
-\pause
-However, there are not enough missing values of \Rstring{hgt} per
-categories of \Rstring{race} to estimate densities.
-<<densityplot fail2, size = 'small'>>=
-with(NHANES, table(race = race, "hgt missing" = is.na(hgt)))
-@
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-In that case, a \Rfct{stripplot} may be better suited. Here we can also split
-the data for \Rstring{gender} and \Rstring{race}.
-<<stripplot1, fig.width = 10, fig.height = 5, size = 'small'>>=
-stripplot(imp2, hgt ~ race|gender, pch = c(1, 20),
-          scales = list(x = list(rot = 45)))
-@
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Alternatively, observed and imputed data can be represented by box-and-whisker plots:
-<<bwplot, fig.width = 10, fig.height = 4.5, size = 'small'>>=
-bwplot(imp2, hgt + wgt + bili + chol ~.imp)
-@
-\end{frame}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% As an alternative, we might consider \Rstring{race} to explain the differences
+% <<densityplot fail, fig.width = 9, fig.height = 5>>=
+% densityplot(imp2, ~hgt|race)
+% @
+% 
+% \pause
+% However, there are not enough missing values of \Rstring{hgt} per
+% categories of \Rstring{race} to estimate densities.
+% <<densityplot fail2, size = 'small'>>=
+% with(NHANES, table(race = race, "hgt missing" = is.na(hgt)))
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% In that case, a \Rfct{stripplot} may be better suited. Here we can also split
+% the data for \Rstring{gender} and \Rstring{race}.
+% <<stripplot1, fig.width = 10, fig.height = 5, size = 'small'>>=
+% stripplot(imp2, hgt ~ race|gender, pch = c(1, 20),
+%           scales = list(x = list(rot = 45)))
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% Alternatively, observed and imputed data can be represented by box-and-whisker plots:
+% <<bwplot, fig.width = 10, fig.height = 4.5, size = 'small'>>=
+% bwplot(imp2, hgt + wgt + bili + chol ~.imp)
+% @
+% \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
@@ -996,12 +999,7 @@ Practical
 
 \vfill
 
-To practice the content of the previous section in an \textbf{interactive tutorial} go to
-\begin{block}{}
-\centering\url{https://emcbiostatistics.shinyapps.io/EP16_MIcheck}
-\end{block}
-\vfill
-or find the \textbf{html version} of the practical here:\\
+To practice the content of the previous section you may find the \textbf{html version} of the practical here:\\
 \begin{block}{}
 \centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/micheck/EP16_MIcheck.html}
 \end{block}
@@ -1133,26 +1131,26 @@ miceadds::micombine.cov(mi.res, ...)
 These functions take \Robj{mids} objects as input.
 \end{frame}
 
-\begin{frame}
-\begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
-\usebeamerfont{part title}
-Practical
-\end{beamercolorbox}
-
-\vfill
-
-To practice the content of the previous section in an \textbf{interactive tutorial}
-go to
-\begin{block}{}
-\centering\url{https://emcbiostatistics.shinyapps.io/EP16_AnalysisMI}
-\end{block}
-\vfill
-or find the \textbf{html version} of the practical here:
-\begin{block}{}
-\centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/analysismi/EP16_AnalysisMI.html}
-\end{block}
-\end{frame}
-
+% \begin{frame}
+% \begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
+% \usebeamerfont{part title}
+% Practical
+% \end{beamercolorbox}
+% 
+% \vfill
+% 
+% To practice the content of the previous section in an \textbf{interactive tutorial}
+% go to
+% \begin{block}{}
+% \centering\url{https://emcbiostatistics.shinyapps.io/EP16_AnalysisMI}
+% \end{block}
+% \vfill
+% or find the \textbf{html version} of the practical here:
+% \begin{block}{}
+% \centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/analysismi/EP16_AnalysisMI.html}
+% \end{block}
+% \end{frame}
+% 
 
 \section{Additional functions in \texttt{mice()}}
 \subsection{Extract \& export imputed data}
@@ -1219,26 +1217,26 @@ imp2combi$m
 @
 \end{frame}
 
-\subsection{Adding variables to \texttt{mids} objects}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-
-The function \Rfct{cbind.mids} allows us to \blue{add columns} to a \Robj{mids} object.
-The extra columns can either be a \Robj{data.frame}, \Robj{matrix}, \Robj{vector}
-or \Robj{factor} or another \Robj{mids} object.\bigskip
-
-
-For example data columns that should be part of the imputed data for completeness,
-but are not needed in the imputation.
-
-<<cibindmids, size = 'small'>>=
-extravar <- rnorm(nrow(NHANES))
-impextra <- mice:::cbind.mids(x = imp2, extravar = extravar)
-@
-
-\blue{Note:}
-\Rfct{cbind} just adds columns to the data, you need to make sure they are
-\blue{sorted correctly} so that the rows of the new data are from the same subjects
-as the corresponding rows in the imputed data.
-\end{frame}
-
+% \subsection{Adding variables to \texttt{mids} objects}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% The function \Rfct{cbind.mids} allows us to \blue{add columns} to a \Robj{mids} object.
+% The extra columns can either be a \Robj{data.frame}, \Robj{matrix}, \Robj{vector}
+% or \Robj{factor} or another \Robj{mids} object.\bigskip
+% 
+% 
+% For example data columns that should be part of the imputed data for completeness,
+% but are not needed in the imputation.
+% 
+% <<cibindmids, size = 'small'>>=
+% extravar <- rnorm(nrow(NHANES))
+% impextra <- mice:::cbind.mids(x = imp2, extravar = extravar)
+% @
+% 
+% \blue{Note:}
+% \Rfct{cbind} just adds columns to the data, you need to make sure they are
+% \blue{sorted correctly} so that the rows of the new data are from the same subjects
+% as the corresponding rows in the imputed data.
+% \end{frame}
+% 

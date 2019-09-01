@@ -2,26 +2,20 @@
 source('Slides/Rscripts/plots_PartI.R')
 @
 
-
-\begin{frame}{Outline of Part I}
-\setlength{\parskip}{0pt}
-% \begin{multicols}{2}
-% \begin{spacing}{1.3}
-% \tableofcontents[part=1]
-% \end{spacing}
-% \vspace*{16ex}
-% \end{multicols}
-\begin{columns}
-\begin{column}{0.5\linewidth}
-\tableofcontents[part=1,sections={1-3}]
-\end{column}
-\begin{column}{0.5\linewidth}
-\tableofcontents[part=1,sections={4-5}]
-\end{column}
-\end{columns}
-
-\end{frame}
-
+% 
+% \begin{frame}{Outline of Part I}
+% \setlength{\parskip}{0pt}
+% \begin{columns}
+% \begin{column}{0.5\linewidth}
+% \tableofcontents[part=1,sections={1-3}]
+% \end{column}
+% \begin{column}{0.5\linewidth}
+% \tableofcontents[part=1,sections={4-5}]
+% \end{column}
+% \end{columns}
+% 
+% \end{frame}
+% 
 
 % Section 1: Multiple Imputation theory ----------------------------------------
 \section{What is Multiple Imputation?}\label{sec:Sec1}
@@ -128,32 +122,19 @@ What we want is the\\
 
 \pause
 
-Rubin suggests to
+\blue{Idea:}  assume nonrespondents are just like respondents
 \begin{itemize}
 \item fit a model to the observed data (``respondents''), and to
 \item obtain for each ``nonrespondent'' the conditional distribution of the
       missing data (given the observed data) as if he/she was a respondent.
 \end{itemize}
 
-\blue{\ding{225}} We assume nonrespondents are just like respondents, and
-obtain the predictive distribution from the model of the respondents' data.
-
-\vfill
-
-\pause
-\begin{block}{\textbf{Example:} survey about age, gender and height}
-Boys aged 10 -- 12 years old answered (on average) that they are 1.45m tall.\\
-\ding{225} \parbox[t]{\dimexpr\linewidth-5em}{
-  We assume that boys aged 10 to 12 who did not
-  report their height are also around 1.45m tall.}
-\end{block}
-\end{frame}
-
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 \textbf{How to represent the multiple imputed values?}\label{slide:RubinI}\\
-For each missing value, we now have multiple imputed values.
+% For each missing value, we now have multiple imputed values.
 \begin{itemize}
 \item For each set of imputed values, create a dataset\\
       (those datasets agree in the observed values but imputed values differ).
@@ -270,14 +251,14 @@ Missingness depends (also) on unobserved data
 \vspace*{2ex}
 \onslide<2->{
 \parbox{\linewidth}{\small
-Questionnaire got lost in mail
+questionnaire got lost in mail
 }}
 
 \vspace*{8ex}
 
 \onslide<3->{
 \parbox{\linewidth}{\small
-Overweight participants are less likely to report their chocolate consumption 
+overweight participants are less likely to report their chocolate consumption 
 (and we know their weight)
 }}
 
@@ -299,7 +280,7 @@ overweight participants are less likely to report their weight
 \item Not possible to distinguish \blue{MNAR} from \blue{MAR} with just the observed data
 \item \blue{Ignorability:} If \blue{M(C)AR} and parameters in missingness model
       (a priori) independent of parameters in data model missingness process
-      does not need to be modeled
+      does not need to be modelled
 \item Complete case analysis (mostly) only unbiased in \blue{MCAR}
 \end{itemize}
 \vfill
@@ -365,15 +346,19 @@ For now: assume only one continuous variable has missing values (\blue{univariat
 
 Model:\\
 $x_{i2} = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i3} + \beta_3 x_{i4} + \varepsilon_i$\\[2ex]
+}
 
-
+\onslide<3->{
 Imputed/predicted value:\\
 $\hat x_{i2} = \hat\beta_0 + \hat\beta_1 x_{i1} + \hat\beta_2 x_{i3} + \hat\beta_3 x_{i4}$
 }
 \end{column}
 \begin{column}{0.45\textwidth}
-\only<1-2>{
+\only<1>{
 \includegraphics[width = \linewidth]{figure/emptyplot.pdf}
+}
+\only<2>{
+\includegraphics[width = \linewidth]{figure/regimp_movie0034.png}
 }
 \only<3->{
 \animategraphics[loop, autoplay, width = \linewidth]{10}{figure/regimp_movie00}{01}{49}
@@ -478,6 +463,186 @@ We assume that the \blue{data have a distribution}, where
 \onslide<3> In the end, we obtain one imputed dataset for each color.
 \end{frame}
 
+\subsection{Semi-parametric imputation}
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Assumption of distributions for parameters and missing values:
+\begin{center}
+\blue{Bayesian}
+\end{center}
+
+Alternative to take into account uncertainty in parameters:
+\begin{center}
+\blue{Bootstrap}
+\end{center}
+
+\pause
+
+\bigskip
+
+Both require the assumption of a \blue{distribution for the missing values}.
+
+\pause
+
+\bigskip
+\blue{What if none of the standard distribution fits?}
+\end{frame}
+
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Predictive Mean Matching (PMM)}
+\begin{itemize}
+\item semi-parametric approach to imputation
+\item developed for settings where the normal distribution is not a
+good choice for the predictive distribution.\cite{Little1988, Rubin1986}
+\end{itemize}
+
+\bigskip
+
+\pause
+
+Idea:
+\begin{itemize}
+\item find cases in the observed data that are similar to the cases with missing values
+\item fill in the missing value with the observed value from one of those cases
+\end{itemize}
+
+\bigskip
+
+To find similar cases, the predicted values of complete and incomplete cases
+are compared.
+
+\end{frame}
+
+
+
+\begin{frame}[label=pmmalgo]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{The steps in PMM:}
+\begin{enumerate}
+\item Obtain parameter estimates for $\bmath{\hat\beta}$ and $\hat\sigma$
+\item Calculate the predicted values for the observed cases
+      $$\bmath{\hat y}_{obs} = \bmath{X}_{obs} \bmath{\hat\beta}$$
+\item Calculate the predicted value for the missing cases
+      $$\bmath{\hat y}_{mis} = \bmath{X}_{mis} \bmath{\hat\beta}$$
+\item For each missing value, find $d$ donor candidates that fulfill a given
+      criterium.
+\item Randomly select one of the donors.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Several \blue{criteria to select donors} have been proposed:
+\begin{enumerate}\itemsep3mm
+\item<1-> The donor is the \blue{(one) case with the smallest absolute difference}
+\item<2-> Donor candidates are the \blue{$d$ cases with the smallest absolute difference}.
+      The donor is selected randomly from the candidates.
+\item<3-> Donor candidates are those cases for which the \blue{absolute difference
+      is smaller than some limit $\eta$}.
+      The donor is selected randomly from the candidates.
+\item<4-> Select candidates like in 2. or 3., but select the donor from the candidates
+      with probability that depends on the absolute difference.\cite{Siddique2008}
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{Potential issues with donor selection}
+\begin{itemize}\itemsep2mm
+% \item<1-> Selection criteria 2. - 4., \blue{require the number of candidates} (or maximal
+% difference) to be specified. Common choices are 3, 5 or 10.
+\item<1-> If the same donor is chosen in many/all imputations (e.g., because
+          only a few similar observed cases are available), the
+          \blue{uncertainty about the missing values will be underestimated}.\\[2ex]
+\onslide<2->{\blue{\ding{225}} PMM may be \blue{problematic} when
+          \begin{itemize}
+          \item the \blue{dataset is very small},
+          \item the \blue{proportion of missing values is large}, or
+          \item one/some \blue{predictor variable(s) are strongly related
+                to the missingness}.
+          \end{itemize}
+}
+\item<3-> Therefore, using one donor is not a
+          good idea. On the other hand, using too many candidates can lead to bad matches.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+For the \blue{sampling of the parameters} (step 1 on slide \ref{pmmalgo}),
+different approaches have been introduced in the literature:
+
+\bigskip
+
+\begin{tabular}{lp{11cm}}
+Type-0 & $\hat\beta_{LS/ML}$ (least squares or maximum likelihood) are used in
+          both prediction models\\[2ex]
+Type-I & $\hat\beta_{LS/ML}$ to predict $\hat y_{obs}$;
+          $\tilde\beta_{B/BS}$ (Bayesian or bootstrap) to predict $\hat y_{mis}$\\[2ex]
+Type-II & $\tilde\beta_{B/BS}$ to predict $\hat y_{obs}$ as well as $\hat y_{mis}$\\[2ex]
+Type-III & different draws $\tilde\beta^{(1)}_{B/BS}$ and $\tilde\beta^{(2)}_{B/BS}$
+           to predict $\hat y_{obs}$ and $\hat y_{mis}$, respectively
+\end{tabular}
+
+\bigskip
+
+The use of Type-0 and Type-I matching \blue{underestimates the uncertainty} about
+the regression parameters.
+\end{frame}
+
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+Another point to consider: the \blue{choice of the set of data used to train
+the prediction models}
+
+\bigskip
+
+In the version presented on slide \ref{pmmalgo}, the same set of data (all cases
+with observed $y$) is used to train the model and to produce predicted values
+of $y_{obs}$.
+
+\bigskip
+
+The predictive model will likely fit the observed cases better than the missing cases,
+and, hence, \blue{variation will be underestimated}.
+
+\bigskip
+
+Alternatives:
+\begin{itemize}
+\item the \blue{model could be trained on the whole data}
+(using previously imputed values)
+\item use a \blue{leave-one-out approach} on the observed data
+\end{itemize}
+\end{frame}
+
+\subsection{What is implemented in software?}
+\begin{frame}{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\blue{mice (in R):}
+\begin{itemize}
+\item \blue{PMM} via \Rfct{mice.impute.pmm}
+      \begin{itemize}
+      \item specification of number of donors $d$ (same for all variables)
+      \item Type-0, Type-I, Type-II matching
+      \end{itemize}
+\item \blue{PMM} via \Rfct{mice.impute.midastouch}
+      \begin{itemize}
+      \item allows leave-one-out estimation of the parameters
+      \item distance based donor selection
+      \item Type-0, Type-I, Type-II matching
+      \end{itemize}
+\item \blue{bootstrap} linear regression via \Rfct{mice.impute.norm.boot}
+\item \blue{bootstrap} logistic regression via \Rfct{mice.impute.logreg.boot}
+\item \blue{Bayesian} linear regression via \Rfct{mice.impute.norm}
+\item \ldots
+\end{itemize}
+\end{frame}
 
 \subsection{Multivariate missing data}\label{subsec:multivarmissing}
 
@@ -534,7 +699,7 @@ conditioning on unobserved values.
 
 
 
-\begin{frame}[label = jointmodelimp]{\thesection. \insertsection}
+\begin{frame}[fragile, label = jointmodelimp]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 There are \blue{two popular approaches} for the imputation step in
 \blue{multivariate non-monotone} missing data:
@@ -550,81 +715,12 @@ There are \blue{two popular approaches} for the imputation step in
 
 \pause
 \begin{block}{Joint Model Imputation}
-(more details later)
+(see for example Carpenter \& Kenward \cite{Carpenter2012})
 \end{block}
-% \end{column}
-% %
-% \begin{column}{0.55\textwidth}
-% \end{column}
-%
-% \begin{flushright}
-% \includegraphics[height = 0.75\textheight]{graphics/MI-imp-cut.pdf}
-% \end{flushright}
-% \end{column}
-% \end{columns}
 \end{frame}
 
 
 \subsection{FCS/MICE}\label{subsec:micealgorithm}
-% 
-% \begin{frame}{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \blue{MICE} (\blue{M}ultiple \blue{I}mputation using \blue{C}hained \blue{E}quations)
-% or\\
-% \blue{FCS} (multiple imputation using \blue{F}ully \blue{C}onditional \blue{S}pecification)
-% 
-% \bigskip
-% extends univariable imputation to the setting with multivariate non-monotone missingness:
-% 
-% \bigskip
-% 
-% MICE/FCS
-% \begin{itemize}
-% \item imputes multivariate missing data on a variable-by-variable basis,
-% \item using the technique for univariate missing data.
-% \end{itemize}
-% 
-% \bigskip
-% 
-% \pause
-% Moreover, MICE/FCS is
-% \begin{itemize}
-% \item an iterative procedure, specifically
-% \item a Markov Chain Monte Carlo (MCMC) method,
-% \item uses the idea of the Gibbs sampler, and
-% \item is a Gibbs sampler if the conditional distributions are compatible\\
-%       (we will come back to this)
-% \end{itemize}
-% \end{frame}
-% 
-% 
-% \begin{frame}{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% 
-% \blue{Markov Chain Monte Carlo}
-% \begin{itemize}
-% \item a technique to \blue{draw samples from a complex probability distribution}
-% \item works via creating a chain of random variables (a Markov chain)\\
-%       \ding{225} The distribution that each element in the chain is sampled from
-%       depends on the value of the previous element.
-% \item When certain conditions are met, the chain eventually stabilizes
-% \item samples of the chain are then a sample from the complex distribution
-% of interest
-% \end{itemize}
-% 
-% \bigskip
-% 
-% \pause
-% \blue{Gibbs sampling}
-% \begin{itemize}
-% \item a MCMC method to obtain a \blue{sample from a multivariate distribution}
-% \item the multivariate distribution is split into a set of univariate full conditional distributions
-% \item a sample from the multivariate distribution can be obtained by repeatedly drawing from each of the univariate distributions
-% \end{itemize}
-% \end{frame}
-
-
-
 \begin{frame}[label = micealgorithm]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 
@@ -688,8 +784,8 @@ One run through the algorithm \blue{\ding{225}} one imputed dataset.
 
 \pause
 \begin{itemize}
-\item the \blue{sequence of imputations} for one missing value (from
-starting value to final iteration) is called a \blue{chain}
+\item The \blue{sequence of imputations} for one missing value (from
+starting value to final iteration) is called a \blue{chain}.
 \item Each run through the MICE algorithm produces one chain per missing value.
 \end{itemize}
 \end{frame}
@@ -719,7 +815,7 @@ Until \blue{convergence}\\
 
 \blue{How to evaluate convergence?}\\
 The \blue{traceplot} (x-axis: iteration number, y-axis: imputed value) should
-show a horizontal band
+show a horizontal band.
 \end{frame}
 
 \subsection{Checking convergence}\label{subsec:convergence}
@@ -735,52 +831,53 @@ for the same missing value.
 \end{frame}
 
 
-\begin{frame}[label = convergence2]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-In imputation we have
-\begin{itemize}
-\item several \blue{variables} with missing values (e.g., $p$)
-\item several missing \blue{values} in each of these variables
-\item $m$ \blue{chains} for each missing value
-\end{itemize}
-\blue{\ding{225}} possibly a large number of MCMC chains
+% \begin{frame}[label = convergence2]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% In imputation we have
+% \begin{itemize}
+% \item several \blue{variables} with missing values (e.g., $p$)
+% \item several missing \blue{values} in each of these variables
+% \item $m$ \blue{chains} for each missing value
+% \end{itemize}
+% \blue{\ding{225}} possibly a large number of MCMC chains
+% 
+% \bigskip
+% 
+% To check all chains separately could be very time consuming in large datasets.
+% 
+% \bigskip
+% 
+% \pause
+% \blue{Alternative:}\\
+% Calculate and plot a summary (e.g., the mean) of the imputed
+% values over all subjects, separately per chain and variable\\
+% \blue{\ding{225}} only $m \times p$ chains to check
+% \end{frame}
 
-\bigskip
 
-To check all chains separately could be very time consuming in large datasets.
-
-\bigskip
-
-\pause
-\blue{Alternative:} Calculate and plot a summary (e.g., the mean) of the imputed
-values over all subjects, separately per chain and variable\\
-\blue{\ding{225}} only $m \times p$ chains to check
-\end{frame}
-
-
-
-\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-\includegraphics[width = \linewidth]{figure/convplot1a.pdf}
-\end{frame}
-
-\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-
-\only<beamer>{
-\only<1>{
-\includegraphics[width = \linewidth]{figure/convplot1b.pdf}
-}
-}
-\only<2|handout:1>{
-\includegraphics[width = \linewidth]{figure/convplot1c.pdf}
-}
-\end{frame}
-
-\begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-\includegraphics[width = \linewidth]{figure/convplot1d.pdf}
-\end{frame}
+% 
+% \begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \includegraphics[width = \linewidth]{figure/convplot1a.pdf}
+% \end{frame}
+% 
+% \begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% \only<beamer>{
+% \only<1>{
+% \includegraphics[width = \linewidth]{figure/convplot1b.pdf}
+% }
+% }
+% \only<2|handout:1>{
+% \includegraphics[width = \linewidth]{figure/convplot1c.pdf}
+% }
+% \end{frame}
+% 
+% \begin{frame}[label = convergence_multiple]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \includegraphics[width = \linewidth]{figure/convplot1d.pdf}
+% \end{frame}
 
 <<include = FALSE>>=
 load('workspaces/PartI.RData')
@@ -861,32 +958,32 @@ Multiple sets of results:
 
 
 \section{Pooling}
-\subsection{Why pooling?}
-\begin{frame}{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Recall from slide~\ref{RubinsIdeas}:\\
-We need to represent missing values by a \blue{number of imputations}.\\
-\blue{\ding{225}} $m$ imputed datasets
+% \subsection{Why pooling?}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% Recall from slide~\ref{RubinsIdeas}:\\
+% We need to represent missing values by a \blue{number of imputations}.\\
+% \blue{\ding{225}} $m$ imputed datasets
+% 
+% \bigskip
+% 
+% \pause
+% 
+% From the different imputed datasets we get \blue{different sets of parameter estimates},
+% each of them with a standard error, representing the uncertainty about the
+% estimate.
+% 
+% \bigskip
+% 
+% \pause
+% We want to \blue{summarize} the results and describe
+% \blue{how (much) the results vary} between the imputed datasets.
+% 
+% \end{frame}
 
-\bigskip
-
-\pause
-
-From the different imputed datasets we get \blue{different sets of parameter estimates},
-each of them with a standard error, representing the uncertainty about the
-estimate.
-
-\bigskip
-
-\pause
-We want to \blue{summarize} the results and describe
-\blue{how (much) the results vary} between the imputed datasets.
-
-\end{frame}
-
-
+% \subsection{Rubin's Rules}
 \begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 In the results from multiply imputed data there are
 \blue{two types of variation/uncertainty}:
 \begin{itemize}
@@ -900,7 +997,7 @@ In the results from multiply imputed data there are
 
 
 \begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 To summarize the results, we can take the mean of the results from the separate
 analyses. This is the \blue{pooled point estimate}.
 \only<beamer>{
@@ -917,14 +1014,14 @@ But does the same work for the standard error (or bounds of the CIs)?
 \bigskip
 
 \onslide<3->{%
-The averaged CI's (marked in red) seem to underestimate the total variation
+The averaged CI's (marked in red) underestimate the total variation
 (within + between).
 }
 \end{frame}
 
 
-\subsection{Rubin's Rules}
-\begin{frame}{\thesection. \insertsection}
+
+\begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 The most commonly used method to pool results from analyses of multiply imputed
 data was introduced by Rubin \cite{Rubin1987}, hence \blue{Rubin's Rules}.
@@ -944,7 +1041,7 @@ $$\bar Q = \frac{1}{m} \sum_{\ell = 1}^m\hat Q_\ell$$
 
 
 \begin{frame}{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \framesubtitle{\thesection.\thesubsectio  n. \insertsubsection}
 The \blue{variance} of the pooled parameter estimate is calculated from the
 \blue{within and between imputation variance}.
 
@@ -966,12 +1063,13 @@ $$T = \bar U + B + B/m$$
 \end{frame}
 
 
-\begin{frame}[label=poolingdf]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+\begin{frame}[fragile, label=poolingdf]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 The \blue{$(1 - \alpha)$ 100\%  confidence interval} is then
 $$\bar Q \pm t_\nu(\alpha/2)\sqrt{T},$$
 where $t_{\nu}$ is the $\alpha/2$ quantile of the $t$ distribution with 
-$\nu = \left(m - 1\right)\left(1 + r_m^{-1}\right)^2$ degrees of freedom,
+$\nu = \left(m - 1\right)\left(1 + r_m^{-1}\right)^2$ degrees of freedom
+\footnote{Barnard et al. \cite{Barnard1999} proposed an improvement to calculate the degrees of freedom. This improved version is implemented in the \textbf{mice} package.},
 where $r_m  = \frac{\left(B + B/m \right)}{\bar U}$
 is the relative increase in variance that is due to the missing values.
 
@@ -980,3 +1078,5 @@ is the relative increase in variance that is due to the missing values.
 \includegraphics[width = \linewidth]{figure/cis_final.pdf}
 \vspace*{-3ex}
 \end{frame}
+
+
