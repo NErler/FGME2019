@@ -1,0 +1,562 @@
+---
+title: "Imputation of Longitudinal or Multi-level Data"
+output: 
+  html_document:
+    code_folding: show
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: false
+    number_sections: false
+    theme: spacelab
+    highlight: tango
+    includes:
+      after_body: ../footer.html
+    css: ../style.css
+---
+
+```{r, include = FALSE}
+runimps <- FALSE
+
+  knitr::opts_hooks$set(eval = function(opt) {
+    if (any(opt$exercise))
+      opt$eval <- opt$include <- FALSE
+    
+    opt
+  })
+  
+  static <- TRUE
+  
+  options(width = 100)
+
+```
+
+
+```{r packages, include = FALSE}
+library(kableExtra)
+library(knitr)
+library(JointAI)
+library(ggplot2)
+library(nlme)
+library(lme4)
+library(splines)
+library(mice)
+```
+
+
+```{r load_data, context="data", include=FALSE}
+load("../data/pbclong.RData")
+source("../data/propplot.R")
+load("../data/impslong.RData")
+
+library(mice)
+
+# pbclong <- subset(survival::pbcseq, select = c('id', 'trt', 'age', 'sex', 'day',
+#                                                'ascites', 'hepato', 'bili',
+#                                                'albumin'))
+# 
+# set.seed(2019)
+# a <- factor(pbclong$ascites[match(unique(pbclong$id), pbclong$id)])
+# a[sample(1:length(a), 60)] <- NA
+# 
+# b <- survival::pbc$copper[match(unique(pbclong$id), survival::pbc$id)]
+# b[sample(1:length(b), 80)] <- NA
+# 
+# pbclong$ascites <- a[match(pbclong$id, unique(pbclong$id))]
+# pbclong$copper <- b[match(pbclong$id, unique(pbclong$id))]
+# 
+# 
+# save(pbclong, file = 'Practicals/MIlong/www/pbclong.RData')
+```
+
+
+## Preface {data-progressive=FALSE}
+### R packages
+
+```{r, eval = static, echo = FALSE, results = 'asis'}
+cat('In this practical, a number of R packages are used.
+If any of them are not installed you may be able to follow the practical
+but will not be able to run all of the code. The packages used (with versions
+that were used to generate the solutions) are:')
+```
+
+* `r R.version.string`
+* `mice` (version: `r packageVersion("mice")`)
+* `nlme` (version: `r packageVersion("nlme")`)
+* `JointAI` (version: `r packageVersion("JointAI")`)
+* `splines` (version: `r packageVersion("splines")`)
+* `ggplot2` (version: `r packageVersion("ggplot2")`)
+
+
+### Dataset 
+
+In this practical we will work with data from a trial on primary 
+biliary cirrhosis (PBC) of the liver.
+
+```{r, eval = static, echo = FALSE}
+asis_output('To get the **pbclong** data, load the file `pbclong.RData`.
+            You can download it [here](https://nerler.github.io/EP16_Multiple_Imputation/practical/data/index.html).
+            To load this dataset, you can use the command `file.choose()` which opens the
+explorer and allows you to navigate to the location of the downloaded file on your computer.
+If you know the path to the file, you can also use `load("<path>/<pbclong.RData")`.')
+```
+
+
+The variables contained in the dataset `pbclong` are:
+
+```{r pbclongvars, echo = FALSE}
+pbclongvars <- rbind(
+  c("`id`", "patient identifier"),
+  c("`day`", "continuously measured day of follow-up time (the time variable)"),
+  c("`sex`", "patients' sex (f: female, m: male)"),
+  c("`trt`", "treatment group (0: D-penicillmain, 1: placebo)"),
+  c("`age`", "patients' age at intake"),
+  c("`ascites`", "presence of ascites at baseline (0:no, 1:yes)"),
+  c("`hepato`", "presence of hepatomegaly or enlarged liver"),
+  c("`bili`", "serum bilirubin level at baseline"),
+  c("`copper`", "urine copper (ug/day)"),
+  # c("`chol`", "serum cholesterol level at baseline"),
+  c("`albumin`", "serum albumin level at follow-up (time-varying)")
+) %>% as.data.frame
+
+names(pbclongvars) <- c("", "")
+
+pbclongvars %>% kable(format = 'html') %>%
+  kable_styling()
+```
+
+The variables have the following distributions and proportions of missing values:
+```{r, echo = FALSE, fig.width = 8, fig.height = 5, out.width = "100%"}
+par(mgp = c(2,0.6, 0), mar = c(3,3,2.5,1))
+JointAI::plot_all(pbclong, ncol = 4, use_level = TRUE, idvar = 'id')
+```
+
+
+The missing data pattern is:
+
+```{r mdpatlong, echo = FALSE, fig.align = "center", fig.width = 6, fig.height = 4}
+md_pattern(pbclong)
+```
+
+<br>
+
+The longitudinal outcome `albumin` shows relatively linear trajectories over time:
+```{r trajectoryplot, echo = FALSE, fig.width = 8, fig.height = 4.5}
+ggplot(pbclong, aes(x = day, y = albumin, color = id, group = id)) +
+  geom_line(na.rm = TRUE) +
+  theme(legend.position = 'none')
+```
+
+To analyse the trajectories of `albumin` we want to use the following linear
+mixed effects model with random intercept and slope
+(either using `lme`  from the package **nlme** or using `lmer` from the 
+package **lme4**):
+
+```{r longmodels, eval = FALSE, echo = TRUE}
+# using package nlme
+lme(albumin ~ day + sex + trt + age + ascites + bili + copper, random = ~day|id)
+
+
+# using package lme4
+lmer(albumin ~ day + sex + trt + age + ascites + bili + copper + (day|id))
+```
+
+
+## Imputation using  **mice** {.tabset .tabset-fade .tabset-pills}
+For imputation of longitudinal data, the **mice** package provides
+special imputation methods that take into account the two-level structure of
+the data.
+
+In the `pbclong` data, missing values occur in baseline covariates `ascites` and
+`copper`, and the time-varying variable `hepato`.
+
+For imputation of baseline covariates, the imputation methods 
+
+* `2lonly.pmm` and 
+* `2lonly.norm`
+
+are available.
+
+Time-varying variables can be imputed with imputation methods such as `2l.norm`
+or `2l.bin`. Since the imputation of `hepato` with `2l.bin` takes quite some time,
+we will omit it in this part of the practical.
+
+The `predictorMatrix` requires some extra specification to identify the 
+"id" variable (set to -2) and the random effects structure (set to 2).
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Run the setup imputation and perform the necessary changes in the imputation
+method and predictor matrix.
+
+```{r, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#micelonghint">Hint</button>
+<div id = "micelonghint" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+**mice** does not recognize automatically that the data are multil-level, hence
+the settings chosen by default are not correct.
+You need to specify imputation methods for all incomplete variables.
+</div>')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution 1\\n")
+```
+
+```{r micelong0-solution}
+micelong0 <- mice(pbclong, maxit = 0)
+meth_micelong <- micelong0$method
+pred_micelong <- micelong0$predictorMatrix
+
+# don't impute hepato
+meth_micelong[c("hepato")] <- ""
+# exclude hepato from predictor of other models (because incomplete)
+pred_micelong[, c("hepato")] <- 0
+
+meth_micelong[c("copper", "ascites")] <- "2lonly.pmm"
+
+pred_micelong[, "id"] <- -2
+pred_micelong[, "day"] <- 2
+
+
+# check the imputation method
+meth_micelong
+
+# check the predictor matrix
+pred_micelong
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task 2\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+* run the imputation with the adapted imputation method `meth_micelong` 
+and predictor matrix `pred_micelong`
+* analyse the imputed data
+* pool the results
+
+```{r, eval = runimps, echo = FALSE}
+savedimps_micelong <- mice(pbclong, meth = meth_micelong, pred = pred_micelong,
+                           maxit = 20, seed = 2019)
+
+savedimps_JointAIlong <- lme_imp(albumin ~ day + sex + trt + age + ascites + 
+                                   bili + copper, random = ~day|id,
+                                 models = c(copper = 'lognorm', bili = 'lognorm'),
+                                 no_model = 'day', n.adapt = 100,
+                                 data = pbclong, n.iter = 500, seed = 2019)
+
+
+library(splines)
+savedimps_JointAIlong2 <- glme_imp(hepato ~ ns(day, df = 3) + sex + trt + age + ascites +
+                                     bili + copper, random = ~1|id, family = binomial(),
+                                   models = c(copper = 'lognorm', bili = 'lognorm'),
+                                   no_model = 'day', data = pbclong, n.iter = 500,
+                                   seed = 2019)
+
+
+save(savedimps_micelong,
+     savedimps_JointAIlong,
+     savedimps_JointAIlong2, file = '../data/impslong.RData')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution 2\\n")
+```
+
+```{r micelong-solution, eval = FALSE}
+micelong <- mice(pbclong, meth = meth_micelong, pred = pred_micelong,
+                 maxit = 20, seed = 2019, printFlag = FALSE)
+
+library(nlme)
+micelong_mira <- with(micelong, lme(albumin ~ day + sex + trt + age + ascites + 
+                                      bili + copper, random = ~day|id)
+)
+
+# alternative:
+# library(lme4)
+# micelong_mira <- with(micelong, lmer(albumin ~ day + sex + trt + age + ascites +
+#                                        bili + copper + (day|id))
+# )
+
+summary(pool(micelong_mira), conf.int = TRUE)
+```
+
+```{r, echo = FALSE, eval = static, warning = FALSE}
+micelong <- savedimps_micelong
+
+library(nlme)
+micelong_mira <- with(micelong, lme(albumin ~ day + sex + trt + age + ascites + 
+                                      bili + copper, random = ~day|id)
+)
+
+summary(pool(micelong_mira), conf.int = TRUE)
+```
+
+
+## Imputation using **JointAI** {.tabset .tabset-fade .tabset-pills}
+
+To analyse incomplete longitudinal data using a linear mixed model the R package
+**JointAI** provides the function `lme_imp()`. 
+The specification of the main model components is analogous to the function
+`lme()` from the **nlme** package.
+
+**Specification of longitudinal models:**<br>
+When imputing variables in a longitudinal (or other multi-level) model and there
+are missing values in baseline (level-2) covariates, models need to be specified
+for all longitudinal covariates, even if they do not have missing values.
+Specifying no model would imply that the incomplete baseline covariates are 
+independent of the complete longitudinal variable (see also [here](https://nerler.github.io/JointAI/articles/ModelSpecification.html#why-do-we-need-models-for-completely-observed-longitudinal-covariates)).
+Therefore, **JointAI** automatically specifies models for all longitudinal covariates in such a setting.
+
+
+An exception may be the time variable: it is often reasonable to assume that
+the baseline covariates are independent of the measurement times of the outcome
+and longitudinal covariates.
+To tell **JointAI** not to specify a model for the time variable, the argument
+`no_model` can be used.
+
+
+**Model types for longitudinal covariates:**<br>
+For longitudinal covariates the following model types are implemented:
+```{r, echo = FALSE}
+tab <- rbind(lmm = c("linear mixed model", "continuous variables"),
+             glmm_logit = c("logistic mixed model", "factors with two levels"),
+             glmm_gamma = c("gamma mixed model (with log-link)", "skewed continuous variables"),
+             glmm_poisson = c("poisson mixed model", "count variables"),
+             clmm = c("cumulative logit mixed model", "ordered factors with >2 levels")
+)
+
+tab <- cbind(paste0("`", rownames(tab), "`"), tab)
+colnames(tab) <- c('name', 'model', 'variable type')
+
+knitr::kable(tab, row.names = FALSE, format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+**More info:**<br>
+For the specification of the other arguments of `lme_imp()`, refer to 
+
+* the [help page](https://nerler.github.io/JointAI/reference/model_imp.html),
+* the vignette on 
+[Model Specification](https://nerler.github.io/JointAI/articles/ModelSpecification.html#MultiLevelStructure), or
+* the details given in the practical on
+[Imputation with Non-linear Associations](https://nerler.github.io/EP16_Multiple_Imputation/practical/minonlin/MInonlin.html)
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Run the imputation (start with `n.iter = 500`; this will take a few seconds).
+
+* Remember to specify appropriate models for the incomplete covariates and longitudinal variables.
+* Prevent specification of a model for `age`.
+* Check convergence using a `traceplot()`.
+* If you are satisfied by convergence and mixing of the chains, get the model `summary()`.
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution\\n")
+```
+
+```{r runJoitAIlong-solution, eval = FALSE, fig.width = 9, fig.height = 5, message = FALSE}
+library(JointAI)
+JointAIlong <- lme_imp(albumin ~ day + sex + trt + age + ascites + 
+                         bili + copper, random = ~day|id,
+                       models = c(copper = 'lognorm', bili = 'glmm_gamma'),
+                       no_model = 'day', data = pbclong, n.iter = 500, seed = 2019)
+
+traceplot(JointAIlong)
+summary(JointAIlong)
+```
+
+```{r, echo = FALSE, eval = static, fig.width = 8, fig.height = 6}
+JointAIlong <- savedimps_JointAIlong
+
+traceplot(JointAIlong)
+summary(JointAIlong)
+```
+
+
+## Additional exercise JointAI {.tabset .tabset-fade .tabset-pills}
+We want to fit a logistic mixed model for the variable `hepato` and explore
+if the association is non-linear over time.
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+* Fit a logistic mixed model using the function `glme_imp` using the same covariates as before.
+* Specify a natural cubic spline with 3 degrees of freedom for `day`.
+* Check convergence using a `traceplot()`.
+
+```{r, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#JointAIhint1">Hint 1</button>
+<div id = "JointAIhint1" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+When specifying a generalized (mixed) model remember to specify the model family and link function.
+</div>')
+
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#JointAIhint2">Hint 2</button>
+<div id = "JointAIhint2" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+To use natural cubic splines use the function `ns()` from the package **splines**, 
+i.e., `ns(day, df = 3)`.
+</div>')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution 1\\n")
+```
+
+```{r JointAIlong2-solution, eval = FALSE}
+library(splines)
+JointAIlong2 <- glme_imp(hepato ~ ns(day, df = 3) + sex + trt + age + ascites +
+                           bili + copper, random = ~1|id, family = binomial(),
+                         models = c(copper = 'lognorm', bili = 'glmm_gamma'),
+                         no_model = 'day', data = pbclong, n.iter = 1000,
+                         seed = 2019)
+
+traceplot(JointAIlong2)
+```
+
+
+```{r, echo = FALSE, eval = static, fig.width = 8, fig.height = 6}
+# JointAIlong2 <- savedimps_JointAIlong2
+# traceplot(JointAIlong2)
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task 2\\n")
+```
+When the model has converged, we want to visualize the potentially non-linear
+association of `day`. To do that, we can create a new dataset containing information
+on an "average" subject, with different values for `day`.
+
+The function `predDF()` creates such a dataset from an object of class `JointAI`.
+It sets reference values (i.e., the median for continuous variables and the 
+reference category for categorical variables) for all variables other than the
+one specified in the argument `var`. The variable given in `var` will range 
+across the range of values of that variable encountered in the data.
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Use `predDF()` to create a dataset that allows visualization of the effect of
+`day`.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution 2\\n")
+```
+
+```{r getJointAIlong2, echo = FALSE}
+JointAIlong2 <- savedimps_JointAIlong2
+```
+
+```{r newdf-solution, eval = static}
+newdf <- predDF(JointAIlong2, var = 'day')
+
+head(newdf)
+
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("### Task 3\\n")
+```
+
+We can now predict the outcome of our model for our "average" subject using the
+function `predict()`. It takes a `JointAI` object and a `data.frame` containing
+the data to predict from as arguments. The argument `quantiles` can be used to
+specify which quantiles of the distribution of each fitted value are returned
+(default is `2.5%` and `97.5%`).
+
+`predict()` returns a list with the following elements
+
+* `dat`: the `data.frame` provided by the user extended with the fitted values
+  and 2.5% and 97.5% quantiles that form the credible interval for the fitted values
+* `fit`: a vector containing the fitted values (the mean of the distribution of the fitted value)
+* `quantiles`: a matrix containing the credible interval for each fitted value
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+* Use `predict()` to obtain the fitted values and corresponding intervals
+* Visualize the result by plotting fitted values and quantiles (y-axis) over time (`day`; x-axis)
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("### Solution 3\\n")
+```
+
+
+```{r makepred-setup, echo = FALSE}
+JointAIlong2 <- savedimps_JointAIlong2
+newdf <- predDF(JointAIlong2, var = 'day')
+```
+
+```{r makepred-solution, fig.width = 7, fig.height = 5}
+# pred <- predict(JointAIlong2, newdata = newdf)
+
+# ggplot(pred$dat, aes(x = day, y = fit)) +
+  # geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.3) +
+  # geom_line()
+```
+
+**Note:**<br>
+The fitted values and quantiles are on the scale of the linear predictor,
+i.e., obtained by multiplying the data in `newdf` ($\mathbf x$) with the samples
+of the posterior distribution of the parameters ($\boldsymbol \beta$).
+
+For a logistic model it is more intuitive to present the fitted values on the
+probability scale.
+
+$$
+\log\left(\frac{\pi}{1-\pi}\right) = \mathbf x^\top\boldsymbol\beta
+\qquad \Rightarrow \pi = \frac{\exp(\mathbf x^\top\boldsymbol\beta)}{1 + \exp(\mathbf x^\top\boldsymbol\beta)}
+$$
+
+The function `plogis()` does this transformation.
+
+
+```{r, echo = FALSE}
+# JointAIlong2 <- savedimps_JointAIlong2
+# newdf <- predDF(JointAIlong2, var = 'day')
+# pred <- predict(JointAIlong2, newdata = newdf)
+```
+
+```{r, fig.width = 7, fig.height = 5}
+# # ggplot(pred$dat, aes(x = day, y = plogis(fit))) +
+#   geom_ribbon(aes(ymin = plogis(`2.5%`), ymax = plogis(`97.5%`)), alpha = 0.3) +
+  # geom_line() +
+  # ylab('probability of hepatomegaly')
+```

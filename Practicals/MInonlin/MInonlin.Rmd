@@ -1,0 +1,929 @@
+---
+title: "Imputation of Data with Non-linear Associations"
+output: 
+  html_document:
+    code_folding: show
+    df_print: paged
+    toc: true
+    toc_float:
+      collapsed: false
+    number_sections: false
+    theme: spacelab
+    highlight: tango
+    includes:
+      after_body: ../footer.html
+    css: ../style.css
+---
+
+```{r, include = FALSE}
+
+runimps <- FALSE
+
+knitr::opts_hooks$set(eval = function(opt) {
+  if (any(opt$exercise))
+    opt$eval <- opt$include <- FALSE
+  
+  opt
+})
+
+static <- TRUE
+
+options(width = 100)
+
+```
+
+
+```{r packages, include = FALSE}
+library(kableExtra)
+library(knitr)
+library(JointAI)
+library(ggpubr)
+library(ggplot2) # for propplot & JointAI
+library(RColorBrewer) # for propplot
+library(reshape2) # for propplot
+```
+
+
+```{r load_data, context="data", include=FALSE}
+load("../data/NHANES3_for_practicals.RData")
+
+source("../data/propplot.R")
+load("../data/imps_nonlin.RData")
+
+library(mice)
+```
+
+
+## Preface {data-progressive=FALSE}
+### R packages
+
+In this practical, a number of R packages are used.
+The packages used (with versions that were used to generate the solutions) are:
+
+* `r R.version.string`
+* `mice` (version: `r packageVersion("mice")`)
+* `JointAI` (version: `r packageVersion("JointAI")`)
+* `ggplot2` (version: `r packageVersion("ggplot2")`)
+* `reshape2` (version: `r packageVersion("reshape2")`)
+* `ggpubr` (version: `r packageVersion("ggpubr")`)
+
+
+### Dataset 
+For this practical, we will use the **NHANES3** data, another subset of the 
+data we have already seen in the lecture slides and the previous practicals.
+It contains only those cases that have
+observed `wgt` and some columns that are not needed were excluded.
+
+To load this dataset, you can use the command `file.choose()` which opens the
+explorer and allows you to navigate to the location of the file
+`NHANES3_for_practicals.RData` on your computer.
+If you know the path to the file, you can also use `load("<path>/NHANES3_for_practicals.RData")`.
+
+### Aim
+The focus of this practical is the imputation of data that has features
+that require special attention.
+
+In the interest of time, we will focus on these features and abbreviate steps
+that are the same as in any imputation setting (e.g., getting to know 
+the data or checking that imputed values are realistic).
+**Nevertheless, these steps are of course required when analysing data in 
+practice.**
+
+
+Our aim is to fit the following **linear regression model for weight**:
+```{r NHANESmodel, eval = FALSE}
+lm(wgt ~ gender + bili + age * (chol + HDL) + hgt)
+```
+
+We expect that the effects of cholesterol and HDL may differ with age, and, 
+hence, include **interaction terms** between `age` and `chol` and `HDL`,
+respectively.
+
+Additionally, we want to include the other variables in the dataset as auxiliary variables.
+
+## Imputation using **mice**
+Use of the *Just Another Variable* approach can in some settings reduce bias.
+Alternatively, we can use *passive imputation*, i.e.,
+calculate the interaction terms in each iteration of the MICE algorithm.
+Furthermore, *predictive mean matching* tends to lead to less bias than 
+normal imputation models.
+
+### Just Another Variable approach {.tabset .tabset-fade .tabset-pills}
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+* Calculate the interaction terms in the incomplete data.
+* Perform the setup-run of `mice()` without any iterations.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 1\\n")
+```
+
+```{r miceJAVsetup-solution}
+# calculate the interaction terms
+NHANES3$agechol <- NHANES3$age * NHANES3$chol
+NHANES3$ageHDL <- NHANES3$age * NHANES3$HDL
+
+# setup run
+imp0 <- mice(NHANES3, maxit = 0, 
+             defaultMethod = c('norm', 'logreg', 'polyreg', 'polr'))
+imp0
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 2\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Apply the necessary change to the imputation method and predictor matrix.
+```{r, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#JAVhint">Hint</button>
+<div id = "JAVhint" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+Since the interaction terms are calculated from the orignal variables,
+these interaction terms should not be used to impute the original variables.
+</div>')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 2\\n")
+```
+
+```{r, miceJAVchanges-solution}
+meth <- imp0$method 
+pred <- imp0$predictorMatrix
+
+# change imputation for "bili" to pmm (to prevent negative values)
+meth["bili"] <- 'pmm'
+ 
+# changes in predictor matrix to prevent original variables being imputer based 
+# on the interaction terms
+pred["chol", "agechol"] <- 0
+pred["HDL", "ageHDL"] <- 0
+
+meth
+pred
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 3\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+Run the imputation using the **JAV approach** and check the traceplot.
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 3\\n")
+```
+
+```{r miceJAV-solution, eval = FALSE, fig.width = 8, fig.height = 6}
+# run imputation with the JAV approach
+impJAV <- mice(NHANES3, method = meth, predictorMatrix = pred,
+                maxit = 10, m = 5)
+
+plot(impJAV, layout = c(4, 6))
+```
+```{r, echo = FALSE, fig.width = 8, fig.height=6}
+impJAV <- savedimps_impJAV
+plot(impJAV, layout = c(4, 6))
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 4\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+We skip the more detailed evaluation of the imputed values.
+With the settings given in the solution the chains have converged and distributions
+of the imputed values match the distributions of the observed data closely enough.
+
+* Analyse the imputed data and pool the results.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 4\\n")
+```
+
+```{r miceJAV-analysis-solution}
+miraJAV <- with(impJAV, 
+                lm(wgt  ~ gender + bili + age + chol + HDL + agechol + ageHDL + hgt))
+summary(pool(miraJAV), conf.int = TRUE)
+```
+
+
+### Passive Imputation {.tabset .tabset-fade .tabset-pills}
+For the passive imputation, we can re-use the adjusted versions of `meth` and 
+`pred` we created for the JAV approach, but additional changes to `meth`
+are necessary.
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Specify the new imputation method, i.e., adapt `meth` and save it as `methPAS`.
+
+```{r, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#PAShint">Hint</button>
+<div id = "PAShint" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+For passive imputation instead of an imputation method you need to specify the formula used to calculate the value that is imputed passively.
+</div>')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 1\\n")
+```
+
+```{r micePASchanges-solution}
+# changes in imputation method for passive imputation
+methPAS <- meth
+methPAS[c("agechol", "ageHDL")] <- c("~I(age*chol)", "~I(age*HDL)")
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 2\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Run the imputation using **passive imputation** and check the traceplot.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 2\\n")
+```
+
+```{r micePAS-solution, eval = FALSE}
+# run imputation with passive imputation
+impPAS <- mice(NHANES3, method = methPAS, predictorMatrix = pred,
+                maxit = 10, m = 5)
+plot(impPAS, layout = c(4, 6))
+```
+
+```{r eval = static, echo = FALSE, fig.width = 8, fig.height=6}
+impPAS <- savedimps_impPAS
+plot(impPAS, layout = c(4, 6))
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 3\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+We will again skip the detailed evaluation of convergence and the imputed values.
+
+* Analyse the imputed data and pool the results.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 3\\n")
+```
+
+```{r micePASanalysis-solution}
+miraPAS <- with(impPAS, 
+                lm(wgt ~ gender + bili + age + chol + HDL + agechol + ageHDL + hgt))
+
+summary(pool(miraPAS), conf.int = TRUE)
+```
+
+
+```{r saveimp, include = FALSE, eval = runimps}
+savedimps_impJAV <- mice(NHANES3, method = meth, predictorMatrix = pred,
+                         maxit = 10, m = 5)
+
+savedimps_impPAS <- mice(NHANES3, method = methPAS, predictorMatrix = pred,
+                         maxit = 10, m = 5)
+
+savedimps_JointAI <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+                            auxvars = ~ race + SBP + hypten + WC,
+                            models = c(bili = 'lognorm'), refcats = 'largest',
+                            n.iter = 100, seed = 2019)
+
+savedimps_lm1 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+                        n.iter = 100, seed = 2019)
+
+
+savedimps_lm2 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+                        auxvars = ~ race + SBP + hypten + WC,
+                        models = c(bili = 'lognorm'), refcats = 'largest',
+                        n.iter = 100, seed = 2019)
+
+savedimps_lm3 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+                        auxvars = ~ race + SBP + hypten + WC,
+                        models = c(bili = 'lognorm'), refcats = 'largest',
+                        monitor_params = c(imps = TRUE),
+                        n.iter = 100, seed = 2019)
+
+save(savedimps_impJAV,
+     savedimps_impPAS,
+     savedimps_JointAI, 
+     savedimps_lm1,
+     savedimps_lm2,
+     savedimps_lm3,
+     file = "../data/imps_nonlin.RData")
+```
+
+## Imputation with **JointAI**
+**JointAI** provides functions that allow us to fit Bayesian regression models
+with incomplete covariates. The main functions are designed to resemble the 
+standard functions to fit regression models with complete data.
+
+For univariate outcomes the following functions are available:
+
+* `lm_imp()`: for linear regression
+* `glm_imp()`: for generalized linear regression (e.g., logistic, gamma or Poisson)
+* `clm_imp()`: for ordinal (cumulative logit) regression
+
+### Specification of the analysis model {.tabset .tabset-fade .tabset-pills}
+Similar to the complete data versions, the functions from **JointAI** take
+the following arguments:
+```{r JointAIargs, echo = FALSE}
+JointAIargs <- rbind(
+  c("`formula`", "model formula"),
+  c("`data`", "original, incomplete dataset"),
+  c("`family`", "for glm's: the distribution family of the outcome (e.g., `binomial()` for a logistic model)")
+) %>% as.data.frame
+
+names(JointAIargs) <- c("", "")
+
+JointAIargs %>% kable(format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Specify the linear regression model using the function `lm_imp()` with the model
+formula given at the beginning of this practical
+(`wgt ~ gender + bili + age * (chol + HDL) + hgt`).
+
+You need to specify the arguments `formula`, `data` and `n.iter`.
+Set `n.iter = 100` (we will learn about this argument further down).
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 1\\n")
+```
+
+```{r JointAIsetup-solution, eval = FALSE}
+lm1 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+               n.iter = 100)
+
+class(lm1)
+```
+
+```{r, echo = FALSE, eval = static}
+lm1 <- savedimps_lm1
+class(lm1)
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 2\\n")
+```
+
+The result is an object of class `JointAI`, which contains
+* the original data (`data`),
+* information on the type of model (`call`, `analysis_type`, `models`,
+`fixed`, `random`, `hyperpars`, `scale_pars`) and 
+* information about the MCMC sampling (`mcmc_settings`),
+* the JAGS model (`model`) and 
+* the MCMC sample (`MCMC`; if a sample was generated),
+* the computational time (`time`) of the MCMC sampling, and 
+* some additional elements that are used by methods for objects of class `JointAI`
+but are typically not of interest for the user.
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Check which imputation models were used in `lm1`.
+
+```{r getlm1, echo = FALSE}
+lm1 <- savedimps_lm1
+```
+
+```{r lm1modelshint, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#lm1modelshint">Hint</button>
+<div id = "lm1modelshint" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+The imputation model types are returned in the JointAI object under "models".
+</div>')
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 2\\n")
+```
+
+```{r lm1models-solution}
+lm1$models
+```
+
+### Specification of the imputation models {.tabset .tabset-fade .tabset-pills}
+In **JointAI**, there are some arguments related to the imputation part of the model:
+```{r JointAIargs2, echo = FALSE}
+JointAIargs <- rbind(
+  c("`models`", paste0("vector of imputation methods (for details see below and",
+                       " the vignette on [Model Specification](https://nerler.github.io/JointAI/articles/ModelSpecification.html#meth))")),
+  c("`auxvars`", paste0("one-sided formula of variables that are not part of the analysis",
+                        " model but should be used to predict missing values (optional;",
+                        " for details see the vignette on [Model Specification](https://nerler.github.io/JointAI/articles/ModelSpecification.html#auxvars))")),
+  c("`refcats`", paste0("allows specification of which category of categorical variables is used as reference (optional;",
+                        " for details see the vignette on [Model Specification](https://nerler.github.io/JointAI/articles/ModelSpecification.html#reference-values-for-categorical-covariates))")),
+  c("`trunc`", paste0("allow truncation of distributions of incomplete continuous",
+   " covariates (for details see the vignette on [Model Specification](https://nerler.github.io/JointAI/articles/ModelSpecification.html#functions-with-restricted-support))"))
+) %>% as.data.frame
+
+names(JointAIargs) <- c("", "")
+
+JointAIargs %>% kable(format = 'html') %>%
+  kable_styling(full_width = FALSE)
+
+```
+
+Like in **mice** default imputation models are chosen based on the `class` of
+each of the incomplete variables.
+The default choices for baseline (not time-varying) covariates are
+```{r, echo = FALSE}
+tab <- rbind(norm = c("linear regression", "continuous variables"),
+             logit = c("logistic regression", "factors with two levels"),
+             multilogit = c("multinomial logit model", "unordered factors with >2 levels"),
+             cumlogit = c("cumulative logit model", "ordered factors with >2 levels")
+)
+
+tab <- cbind(paste0("`", rownames(tab), "`"), tab)
+colnames(tab) <- c('name', 'model', 'variable type')
+
+knitr::kable(tab, row.names = FALSE, format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+Alternative imputation methods are available for continuous baseline covariates:
+```{r, echo = FALSE}
+tab = rbind(lognorm = c("normal regression of the log-transformed variable",
+                        "right-skewed variables >0"),
+            gamma = c("Gamma regression (with log-link)",
+                        "right-skewed variables >0"),
+            beta = c("beta regression (with logit-link)",
+                     "continuous variables with values in [0, 1]")
+)
+tab <- cbind(paste0("`", rownames(tab), "`"), tab)
+colnames(tab) <- c('name', 'model', 'variable type')
+
+knitr::kable(tab, row.names = FALSE, format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Re-fit the linear regression model, but now
+
+* specify a log-normal distribution for `bili`
+* set the reference category to the largest group
+* use the other variables that are in the data as auxiliary variables
+
+```{r lm2hints, eval = static, results = 'asis', echo = FALSE}
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#lm2hint1">Hint 1</button>
+<div id = "lm2hint1" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+To specify a non-default imputation method use the argument `models = c(bili = ...)`.
+</div>')
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#lm2hint2">Hint 2</button>
+<div id = "lm2hint2" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+To set the respective largest group as reference category for all categorical variables use the argument `refcats = "largest"`.
+</div>')
+cat('<button type="button" class="btn btn-info btn-sm" data-toggle="collapse" data-target="#lm2hint3">Hint 3</button>
+<div id = "lm2hint3" class="collapse" style="border:1px; border-style:solid; padding: 1em; border-color:#1F78B4">
+Auxiliary variables need to be specified explicitely using the argument `auxvars`. It takes a one-sided formula
+</div>')
+```
+
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution\\n")
+```
+
+```{r JointAIlm2-solution, eval = FALSE}
+lm2 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+               auxvars = ~ race + SBP + hypten + WC,
+               models = c(bili = 'lognorm'), refcats = 'largest',
+               n.iter = 100)
+```
+
+
+### Specification of the MCMC settings {.tabset .tabset-fade .tabset-pills}
+Specification of the basic settings for the MCMC sampling can be achieved using
+the following arguments:
+```{r JointAIargs3, echo = FALSE}
+JointAIargs <- rbind(
+  c("`n.chains`", "number of MCMC chains"),
+  c("`n.adapt`", "number of iterations used in the adaptive phase"),
+  c("`n.iter`", "number of iterations per MCMC chain in the sampling phase")
+) %>% as.data.frame
+
+names(JointAIargs) <- c("", "")
+
+JointAIargs %>% kable(format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+**JointAI** has more arguments than the ones given above, but in this practical
+we focus only on the most important. 
+You may find out more about all the arguments in the vignette on [MCMC Settings](https://nerler.github.io/JointAI/articles/MCMCsettings.html).
+
+By default, `n.chains = 3`, `n.adapt = 100` and `n.iter = 0`.
+
+It is useful to use more than one chain to be able
+to evaluate convergence of the MCMC chains.
+
+Samples in the adaptive phase are not used for the final MCMC sample. They are
+needed to optimize the MCMC sampler. When the number provided via the argument
+`n.adapt` is insufficient for this optimization a warning message will be printed.
+In simple models (e.g., linear regression) usually the default value of `n.adapt = 100`
+can be used.
+
+The default value for `n.iter`, the number of iterations in the sampling phase
+is `0` (no MCMC sample will be created). The number of iterations that is needed
+depends on how complex the model and the data is and can range from somewhere
+as low as 100 up to several million.
+
+In the following we will look at some criteria to determine if the number of 
+MCMC samples that was used is sufficient.
+
+
+### Evaluation of the MCMC sample {.tabset .tabset-fade .tabset-pills}
+The first step after fitting a Bayesian model should be to confirm that
+the MCMC chains have converged. This can be done visually, using a traceplot
+(plotting the sampled values per parameter and chain across iterations)
+or using the Gelman-Rubin criterion. 
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Investigate convergence of `lm2` by creating a traceplot using the function `traceplot()`.
+The plot should show a horizontal band without trends or patterns and the 
+different chains should be mixed.
+
+```{r loadlm2, echo = FALSE}
+lm2 <- savedimps_JointAI
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 1\\n")
+```
+
+```{r lm2trace-solution, fig.width = 8, fig.height = 6, out.width = "100%"}
+traceplot(lm2)
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 2\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Investigate convergence of `lm2` using the Gelman-Rubin criterion, implemented
+in the function `GR_crit()`.
+
+The upper limit of the confidence interval should not be much larger than 1.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 2\\n")
+```
+
+```{r lm2GR-solution, fig.width = 7, fig.height = 5}
+GR_crit(lm2)
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Continue\\n")
+```
+
+When we are satisfied with the convergence of the MCMC chains we can take a look
+at the MCMC sample is precise enough. We can do this by comparing the Monte Carlo
+error (which describes the error made since we have just a finite sample)
+to the estimated standard deviation.
+This is implemented in the function `MC_error()`.
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 3\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Calculate the Monte Carlo error for `lm2` with the help of `MC_error()`.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 3\\n")
+```
+
+```{r lm2MCE-solution, fig.width = 7, fig.height = 5}
+MC_error(lm2)
+
+par(mar = c(3.2, 5, 1, 1), mgp = c(2, 0.6, 0))
+plot(MC_error(lm2))
+```
+The plot is just shows the ratio `MCSE/SD`. It is usually faster to check
+if all dots are left of the vertical 5% line than to read all numers in the 
+table.
+For our final results, we should increase the number of iterations (either by 
+inceasing `n.iter` or `n.chains`) to get a more precise estimate of the posterior
+distribution.
+
+### Results {.tabset .tabset-fade .tabset-pills}
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Get the summary of the model using the function `summary()`.
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution\\n")
+```
+
+```{r lm2results-solution, fig.width = 8, fig.height = 6, out.width = "100%", eval = static}
+summary(lm2)
+```
+
+## Additional exercise JointAI
+### Monitoring imputed values {.tabset .tabset-fade .tabset-pills}
+**JointAI** also allows us to extract imputed values to generate multiple 
+imputed datasets that can, for instance, be used for a secondary analysis.
+
+To be able to extract the imputed values, it is necessary to specify in advance
+that these values should be monitored ("recorded"). This can be done using
+the argument `monitor_params`.
+
+`monitor_params` uses a number of key words to specify which (groups of) parameters
+or values should be monitored. Each key word works like a switch and can be set
+to `TRUE` or `FALSE`. For more details see the vignette on [Parameter Selection](https://nerler.github.io/JointAI/articles/SelectingParameters.html).
+
+For monitoring imputed values, `monitor_params = c(imps = TRUE)` needs to be 
+specified.
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Re-fit the linear regression model, but now additionally set the argument `monitor_params`
+to keep the imputed values.
+
+```{r JointAIlm3, exercise = TRUE, exercise.timelimit = 500}
+lm3 <- ...
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution\\n")
+```
+
+```{r JointAIlm3-solution, eval = FALSE}
+lm3 <- lm_imp(wgt ~ gender + bili + age * (chol + HDL) + hgt, data = NHANES3,
+               auxvars = ~ race + SBP + hypten + WC,
+               models = c(bili = 'lognorm'), refcats = 'largest',
+               n.iter = 100, monitor_params = c(imps = TRUE))
+```
+
+### Extracting imputed data {.tabset .tabset-fade .tabset-pills}
+
+The function `get_MIdat()` allows us to create multiple completed datasets
+from an object of class `JointAI`. 
+
+It takes the following arguments
+```{r getMIdatargs, echo = FALSE}
+getMIdatargs <- rbind(
+  c("`object`", "an object of class `JointAI`"),
+  c("`m`", "number of imputed datasets"),
+  c("`include`", "should the original, incomplete data be included? (default is `TRUE`)"),
+  c("`start`", "first iteration of interest; allows discarding burn-in iterations"),
+  c("`minspace`", "minimum number of iterations between iterations chosen as imputed values (default is 50)"),
+  c("`seed`", "optional seed value"),
+  c("`export_to_SPSS`", "logical; should the completed data be exported to SPSS?"),
+  c("`resdir`", "optional directory for results (for export to SPSS)"),
+  c("`filename`", "optional file name (for export to SPSS)")
+) %>% as.data.frame
+
+names(getMIdatargs) <- c("", "")
+
+getMIdatargs %>% kable(format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 1\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+* Extract 5 imputed datasets from `lm3`.
+* Inspect the resulting object.
+
+```{r getlm3, echo = FALSE}
+lm3 <- savedimps_lm3
+```
+
+```{r MIdatlm3, exercise = TRUE, exercise.timelimit = 500, exercise.setup = 'getlm3'}
+MIdat3 <- ...
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 1\\n")
+```
+
+```{r MIdatlm3-solution, eval = static}
+MIdat3 <- get_MIdat(lm3, m = 5)
+
+head(MIdat3)
+
+summary(MIdat3)
+
+```
+
+We see that some columns were added to the data:
+
+* `Imputation_` identifies the imputation number
+* `.id` is the subject ID
+* `.rownr` refers to the row number of the original data
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task 2\\n")
+```
+
+Similar to the functions `densplot()` from the **mice** package and `propplot()`,
+the function `plot_imp_distr()` from **JointAI** allows us to plot the distribution
+of the observed and imputed values for the incomplete variables.
+
+It takes the following arguments
+
+```{r, echo = FALSE}
+tab <- rbind(
+  c("`data`", "a data.frame in long format containing multiple imputations (and the original incomplete data)"),
+  c("`imp`", "the name of the variable specifying the imputation indicator"),
+  c("`id`", "the name of the variable specifying the subject indicator"),
+  c("`rownr`", "the name of a variable identifying which rows correspond to the same observation in the original (unimputed) data"),
+  c("`ncol`, `nrow`", "optional number of rows and columns in the plot layout; automatically chosen if unspecified")
+) %>% as.data.frame
+
+names(tab) <- c("", "")
+
+tab %>% kable(format = 'html') %>%
+  kable_styling(full_width = FALSE)
+```
+
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+
+Check the imputed values in  `MIdat3` using `plot_imp_distr()`.
+
+```{r getimps, echo = FALSE}
+lm3 <- savedimps_lm3
+MIdat3 <- get_MIdat(lm3, m = 5)
+```
+
+```{r plotimps, exercise = TRUE, exercise.timelimit = 500, exercise.setup = 'getimps', fig.width = 8, fig.height = 6}
+
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution 2\\n")
+```
+
+```{r plotimps-solution, eval = static, fig.width = 8, fig.height = 7}
+plot_imp_distr(MIdat3)
+```
+
+### Transforming imputed data to a mids object {.tabset .tabset-fade .tabset-pills}
+
+To perform standard analyses on the imputed data it is usefull to convert them
+to a `mids` object, so that they can be treated as if they had been imputed
+with `mice()`.
+
+The **mice** package proves the function `as.mids()` to convert a long-format
+dataset (with original and multiple imputed datasets stacked onto each other)
+to a `mids` object.
+
+
+```{r, eval = static, echo = FALSE}
+asis_output("#### Task\\n")
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output('<div style="border:2px; border-style:solid; padding: 1em; border-color:#446E9B">')
+```
+
+Transform `MIdat3` to a `mids` object and confirm that it has worked by checking
+the `class` of the result.
+
+```{r getMIdat3, echo = FALSE}
+lm3 <- savedimps_lm3
+MIdat3 <- get_MIdat(lm3, m = 5)
+```
+
+```{r lm3mids, exercise = TRUE, exercise.timelimit = 500}
+mids3 <- ...
+```
+
+```{r, eval = static, echo = FALSE}
+asis_output("</div>")
+
+asis_output("#### Solution\\n")
+```
+
+```{r lm3mids-solution,  eval = FALSE}
+mids3 <- as.mids(MIdat3, .imp = "Imputation_", .id = '.id')
+
+class(mids3)
+```
