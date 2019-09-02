@@ -253,7 +253,7 @@ savedimps_micelong <- mice(pbclong, meth = meth_micelong, pred = pred_micelong,
 
 savedimps_JointAIlong <- lme_imp(albumin ~ day + sex + trt + age + ascites + 
                                    bili + copper, random = ~day|id,
-                                 models = c(copper = 'lognorm', bili = 'lognorm'),
+                                 models = c(copper = 'lognorm'),
                                  no_model = 'day', n.adapt = 100,
                                  data = pbclong, n.iter = 500, seed = 2019)
 
@@ -261,7 +261,7 @@ savedimps_JointAIlong <- lme_imp(albumin ~ day + sex + trt + age + ascites +
 library(splines)
 savedimps_JointAIlong2 <- glme_imp(hepato ~ ns(day, df = 3) + sex + trt + age + ascites +
                                      bili + copper, random = ~1|id, family = binomial(),
-                                   models = c(copper = 'lognorm', bili = 'lognorm'),
+                                   models = c(copper = 'lognorm'),
                                    no_model = 'day', data = pbclong, n.iter = 500,
                                    seed = 2019)
 
@@ -383,7 +383,7 @@ asis_output("### Solution\\n")
 library(JointAI)
 JointAIlong <- lme_imp(albumin ~ day + sex + trt + age + ascites + 
                          bili + copper, random = ~day|id,
-                       models = c(copper = 'lognorm', bili = 'glmm_gamma'),
+                       models = c(copper = 'lognorm'),
                        no_model = 'day', data = pbclong, n.iter = 500, seed = 2019)
 
 traceplot(JointAIlong)
@@ -437,7 +437,7 @@ asis_output("### Solution 1\\n")
 library(splines)
 JointAIlong2 <- glme_imp(hepato ~ ns(day, df = 3) + sex + trt + age + ascites +
                            bili + copper, random = ~1|id, family = binomial(),
-                         models = c(copper = 'lognorm', bili = 'glmm_gamma'),
+                         models = c(copper = 'lognorm'),
                          no_model = 'day', data = pbclong, n.iter = 1000,
                          seed = 2019)
 
@@ -446,8 +446,8 @@ traceplot(JointAIlong2)
 
 
 ```{r, echo = FALSE, eval = static, fig.width = 8, fig.height = 6}
-# JointAIlong2 <- savedimps_JointAIlong2
-# traceplot(JointAIlong2)
+JointAIlong2 <- savedimps_JointAIlong2
+traceplot(JointAIlong2)
 ```
 
 ```{r, eval = static, echo = FALSE}
@@ -525,11 +525,11 @@ newdf <- predDF(JointAIlong2, var = 'day')
 ```
 
 ```{r makepred-solution, fig.width = 7, fig.height = 5}
-# pred <- predict(JointAIlong2, newdata = newdf)
+pred <- predict(JointAIlong2, newdata = newdf)
 
-# ggplot(pred$dat, aes(x = day, y = fit)) +
-  # geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.3) +
-  # geom_line()
+ggplot(pred$dat, aes(x = day, y = fit)) +
+  geom_ribbon(aes(ymin = `2.5%`, ymax = `97.5%`), alpha = 0.3) +
+  geom_line()
 ```
 
 **Note:**<br>
@@ -549,14 +549,14 @@ The function `plogis()` does this transformation.
 
 
 ```{r, echo = FALSE}
-# JointAIlong2 <- savedimps_JointAIlong2
-# newdf <- predDF(JointAIlong2, var = 'day')
-# pred <- predict(JointAIlong2, newdata = newdf)
+JointAIlong2 <- savedimps_JointAIlong2
+newdf <- predDF(JointAIlong2, var = 'day')
+pred <- predict(JointAIlong2, newdata = newdf)
 ```
 
 ```{r, fig.width = 7, fig.height = 5}
-# # ggplot(pred$dat, aes(x = day, y = plogis(fit))) +
-#   geom_ribbon(aes(ymin = plogis(`2.5%`), ymax = plogis(`97.5%`)), alpha = 0.3) +
-  # geom_line() +
-  # ylab('probability of hepatomegaly')
+ggplot(pred$dat, aes(x = day, y = plogis(fit))) +
+  geom_ribbon(aes(ymin = plogis(`2.5%`), ymax = plogis(`97.5%`)), alpha = 0.3) +
+  geom_line() +
+  ylab('probability of hepatomegaly')
 ```
