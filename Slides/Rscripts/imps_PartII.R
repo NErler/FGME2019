@@ -1,6 +1,4 @@
-projdir <- getwd()
-datadir <- file.path(projdir, "data")
-load(file.path(datadir, "NHANES_for_lectures.RData"))
+load(file.path('Slides', 'data', "NHANES_for_lectures.RData"))
 NHANES <- subset(NHANES, select = -DBP)
 
 
@@ -16,7 +14,7 @@ pred <- imp0$predictorMatrix
 pred[, "HyperMed"] <- 0
 imp <- mice(NHANES, method = meth, predictorMatrix = pred,
             seed = 2019)
-save(imp, file = file.path(projdir, "Slides/workspaces/imp.RData"))
+save(imp, file = file.path("Slides/workspaces/imp.RData"))
 
   
 # imp2 -------------------------------------------------------------------------
@@ -24,10 +22,10 @@ post <- imp$post
 post["creat"] <- "imp[[j]][,i] <- squeeze(imp[[j]][,i], c(0, 100))"
 imp2 <- update(imp, post = post, maxit = 20, seed = 123, printFlag = TRUE)
 
-save(imp2, file = file.path(projdir, "Slides/workspaces/imp2.RData"))
+save(imp2, file = file.path("Slides/workspaces/imp2.RData"))
 
 # imp2b -----------------------------------------------------------------------
 imp2b <- update(imp2, post = post, maxit = 20, seed = 456)
-save(imp2b, file = file.path(projdir, "Slides", "workspaces/imp2b.RData"))
+save(imp2b, file = file.path("Slides", "workspaces/imp2b.RData"))
 
   

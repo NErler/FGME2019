@@ -58,6 +58,23 @@ plotexint$combi <- paste0(plotexint$variable, "_",
 
 
 
+# nonlinear comparison ---------------------------------------------------------
+# * simulate data -------------------------------------------------------------
+set.seed(2018)
+N <- 200
+x <- rnorm(N)
+z <- rbinom(N, size = 1, prob = plogis(x))
+y <- x + x^2 + z + x*z + rnorm(N, 0, 0.5)
+
+DF_nonlin <- data.frame(y = y, x = x, z = z)
+
+# model on complete data
+mod_nonlin <- lm(y ~ x + I(x^2) + z + x:z, data = DF_nonlin)
+
+# create missing values
+DF_nonlin$x[sample(1:length(x), size = N/2)] <- NA
+
+
 # longitudinal example ---------------------------------------------------------
 set.seed(2018)
 N <- 50
@@ -300,8 +317,3 @@ survdat$x2[sample(1:N, N*0.3)] <- NA
 survdat$x2 <- factor(survdat$x2)
 survdat_orig$x2 <- factor(survdat_orig$x2)
 
-
-
-
-
-# simnonline 2 -----------------------------------------------------------------

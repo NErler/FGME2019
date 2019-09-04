@@ -15,14 +15,12 @@ source('Slides/Rscripts/plots_PartI.R')
 % \end{columns}
 % 
 % \end{frame}
-% 
+ 
 
-% Section 1: Multiple Imputation theory ----------------------------------------
 \section{What is Multiple Imputation?}\label{sec:Sec1}
 \subsection{History \& Ideas}\label{subsec:history}
 \begin{frame}[fragile, label=history]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \framesubtitle{What is Multiple Imputation?}
 \begin{itemize}
 \item Developed by \blue{Donald B. Rubin} in the 1970s
 \item to handle missing values in \blue{public use databases}\\
@@ -40,16 +38,6 @@ Goal: data should be usable by \cite{Rubin1996}
 \item standard \blue{software that can only handle complete data}, and usually
 \item are \blue{not experts in handling incomplete data}.
 \end{itemize}
-
-% \bigskip
-%
-% \pause
-% Rubin's thoughts:\cite{Rubin2004}
-% \begin{enumerate}[(I)]
-% \item one imputed value can not be correct in general\\
-%       \blue{\ding{225}} we need to represent missing values by a \blue{number of imputations}
-% \item to find \blue{sensible values} to fill in, we need some kind of \blue{model}
-% \end{enumerate}
 \end{frame}
 
 
@@ -118,34 +106,42 @@ What we want is the\\
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+
+\onslide<1->{
 \textbf{How to obtain that predictive distribution?}\\
+}
 
-\pause
-
+\onslide<2->{
 \blue{Idea:}  assume nonrespondents are just like respondents
 \begin{itemize}
-\item fit a model to the observed data (``respondents''), and to
+\item fit a model to the observed data
 \item obtain for each ``nonrespondent'' the conditional distribution of the
-      missing data (given the observed data) as if he/she was a respondent.
+      missing data (given the observed data) as if he/she was a respondent
 \end{itemize}
-
-% \end{frame}
-% 
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-\textbf{How to represent the multiple imputed values?}\label{slide:RubinI}\\
-% For each missing value, we now have multiple imputed values.
-\begin{itemize}
-\item For each set of imputed values, create a dataset\\
-      (those datasets agree in the observed values but imputed values differ).
-\item Analyse each dataset, and
-\item take the results from each analysis.
-\end{itemize}
+}
 
 \bigskip
 
-\blue{\ding{225}} We can describe how (much) the \blue{results vary between the
-imputed datasets}, and calculate summary measures.
+\onslide<1->{
+\textbf{How to represent the multiple imputed values?}\label{slide:RubinI}\\
+}
+\onslide<3->{
+\begin{itemize}
+\item for each set of imputed values, create a dataset\\
+      (those datasets agree in the observed values but imputed values differ)
+\item analyse each dataset
+\item combine results from all analyses
+\end{itemize}
+}
+\bigskip
+
+\onslide<4->{
+\blue{\ding{225}} We can describe
+\begin{itemize}
+\item the overall results
+\item how (much) the \blue{results vary between the imputed datasets}
+\end{itemize}
+}
 \end{frame}
 
 
@@ -277,10 +273,12 @@ overweight participants are less likely to report their weight
 
 \begin{itemize}
 \item \blue{MCAR} is a special case of \blue{MAR}
-\item Not possible to distinguish \blue{MNAR} from \blue{MAR} with just the observed data
-\item \blue{Ignorability:} If \blue{M(C)AR} and parameters in missingness model
-      (a priori) independent of parameters in data model missingness process
-      does not need to be modelled
+\item not possible to distinguish \blue{MNAR} from \blue{MAR} with just the observed data
+\item \blue{Ignorability:}\\
+      If \blue{M(C)AR} and parameters in $p(R\mid X, \psi)$ are (a priori) 
+      independent of parameters in $p(X\mid\theta)$ 
+      \blue{\ding{225}}
+      missingness process does not need to be modelled
 \item Complete case analysis (mostly) only unbiased in \blue{MCAR}
 \end{itemize}
 \vfill
@@ -466,12 +464,12 @@ We assume that the \blue{data have a distribution}, where
 \subsection{Semi-parametric imputation}
 \begin{frame}{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Assumption of distributions for parameters and missing values:
+Assumption of \blue{distributions} for \blue{parameters} and \blue{missing values}:
 \begin{center}
 \blue{Bayesian}
 \end{center}
 
-Alternative to take into account uncertainty in parameters:
+\blue{Alternative} to take into account \blue{uncertainty in parameters}:
 \begin{center}
 \blue{Bootstrap}
 \end{center}
@@ -503,15 +501,16 @@ good choice for the predictive distribution.\cite{Little1988, Rubin1986}
 
 \pause
 
-Idea:
+\blue{Idea:}
 \begin{itemize}
-\item find cases in the observed data that are similar to the cases with missing values
-\item fill in the missing value with the observed value from one of those cases
+\item \blue{find cases} in the observed data that are \blue{similar}
+      to the cases with missing values
+\item \blue{fill in} the missing value with the \blue{observed value} from one of those cases
 \end{itemize}
 
 \bigskip
 
-To find similar cases, the predicted values of complete and incomplete cases
+To find similar cases, the \blue{predicted values} of complete and incomplete cases
 are compared.
 
 \end{frame}
@@ -522,11 +521,11 @@ are compared.
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 \blue{The steps in PMM:}
 \begin{enumerate}
-\item Obtain parameter estimates for $\bmath{\hat\beta}$ and $\hat\sigma$
+\item Obtain parameter estimates for $\bmath{\hat\beta}$ and $\hat\sigma$.
 \item Calculate the predicted values for the observed cases
-      $$\bmath{\hat y}_{obs} = \bmath{X}_{obs} \bmath{\hat\beta}$$
+      $$\bmath{\hat y}_{obs} = \bmath{X}_{obs} \bmath{\hat\beta}.$$
 \item Calculate the predicted value for the missing cases
-      $$\bmath{\hat y}_{mis} = \bmath{X}_{mis} \bmath{\hat\beta}$$
+      $$\bmath{\hat y}_{mis} = \bmath{X}_{mis} \bmath{\hat\beta}.$$
 \item For each missing value, find $d$ donor candidates that fulfill a given
       criterium.
 \item Randomly select one of the donors.
@@ -558,7 +557,10 @@ Several \blue{criteria to select donors} have been proposed:
 \item<1-> If the same donor is chosen in many/all imputations (e.g., because
           only a few similar observed cases are available), the
           \blue{uncertainty about the missing values will be underestimated}.\\[2ex]
-\onslide<2->{\blue{\ding{225}} PMM may be \blue{problematic} when
+\item<2-> Therefore, using one donor is not a
+          good idea. On the other hand, using too many candidates can lead to bad matches.
+\end{itemize}
+\onslide<3->{\blue{\ding{225}} PMM may be \blue{problematic} when
           \begin{itemize}
           \item the \blue{dataset is very small},
           \item the \blue{proportion of missing values is large}, or
@@ -566,9 +568,6 @@ Several \blue{criteria to select donors} have been proposed:
                 to the missingness}.
           \end{itemize}
 }
-\item<3-> Therefore, using one donor is not a
-          good idea. On the other hand, using too many candidates can lead to bad matches.
-\end{itemize}
 \end{frame}
 
 
@@ -597,8 +596,8 @@ the regression parameters.
 
 \begin{frame}{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Another point to consider: the \blue{choice of the set of data used to train
-the prediction models}
+Another point to consider:\\
+the \blue{choice of the set of data used to train the prediction models}.
 
 \bigskip
 
@@ -664,10 +663,14 @@ impute $x_2$ given $x_1$, $x_4$ and $x_3$
 \begin{column}{0.3\textwidth}
 \scalebox{0.8}{
   \begin{tabular}{ccccc}
-  $X_1$ & $X_2$ & $X_3$ & $X_4$\\\hline
-  \checkmark & NA     & \checkmark & \checkmark\\
-  \checkmark & NA     & NA         & \checkmark\\
-  \checkmark & NA     & NA         & NA\\
+  $X_1$      & $X_4$      & $X_3$      & $X_2$\\\hline
+  \checkmark & \checkmark & \checkmark & NA\\
+  \checkmark & \checkmark & NA         & NA\\
+  \checkmark & NA         & NA         & NA\\
+  % $X_1$      & $X_2$  & $X_3$      & $X_4$\\\hline
+  % \checkmark & NA     & \checkmark & \checkmark\\
+  % \checkmark & NA     & NA         & \checkmark\\
+  % \checkmark & NA     & NA         & NA\\
   \vdots     & \vdots & \vdots     & \vdots
  \end{tabular}
 }

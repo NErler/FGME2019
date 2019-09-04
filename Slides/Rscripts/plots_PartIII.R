@@ -1,5 +1,6 @@
 library(ggplot2)
 library(lme4)
+library(magrittr)
 
 source('Slides/Rscripts/simdata_PartIII.R')
 
@@ -401,23 +402,6 @@ dev.off()
 
 
 # nonlinear comparison ---------------------------------------------------------
-# * simulate data -------------------------------------------------------------
-set.seed(2018)
-N <- 200
-x <- rnorm(N)
-z <- rbinom(N, size = 1, prob = plogis(x))
-y <- x + x^2 + z + x*z + rnorm(N, 0, 0.5)
-
-DF_nonlin <- data.frame(y = y, x = x, z = z)
-
-# model on complete data
-mod_nonlin <- lm(y ~ x + I(x^2) + z + x:z, data = DF_nonlin)
-
-# create missing values
-DF_nonlin$x[sample(1:length(x), size = N/2)] <- NA
-
-
-
 # * imputation -----------------------------------------------------------------
 # naive imputation, using only y, x, z
 impnaive <- mice(DF_nonlin)

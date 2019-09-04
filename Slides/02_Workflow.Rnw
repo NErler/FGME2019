@@ -1,8 +1,7 @@
 <<load NHANES prep, echo = F>>=
 runimps <- FALSE
 
-datadir <- file.path(projdir, "data")
-load(file.path(datadir, "NHANES_for_lectures.RData"))
+load(file.path('data', "NHANES_for_lectures.RData"))
 NHANES <- subset(NHANES, select = -DBP)
 @
 
@@ -34,27 +33,37 @@ Examination Survey (NHANES)}.
 
 \vfill
 
-There are several packages in \textsf{R} that provide functions to create and
-\blue{plot the missing data pattern}.\\\bigskip
+There are several packages in \textsf{R} that provide functions to visualize
+incomplete data.\\\bigskip
 
 Examples are:\\
-\textbf{mice}, \textbf{JointAI}, \textbf{VIM}, \textbf{Amelia}, \textbf{visdat}, \textbf{naniar}, \ldots\\[3ex]
+\textbf{naniar}, \textbf{VIM},  \textbf{visdat}, \textbf{mice}, \textbf{JointAI},
+\textbf{Amelia}, \ldots\\[3ex]
 \end{frame}
 
+
+\subsection{Data distributions}
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+<<eval = FALSE>>=
+JointAI::plot_all(NHANES, nclass = 30)
+@
+\includegraphics[width = \linewidth]{figure/plot_all.pdf}
+\end{frame}
 
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 <<setwidth120, echo = FALSE>>=
 op <- getOption("width")
-options("width" = 120)
+options("width" = 110)
 @
 
 
 <<mice_md.pattern, size = 'scriptsize'>>=
 mdp <- mice::md.pattern(NHANES, plot = FALSE)
-head(mdp[, -c(7:14)]) # omit some columns to fit it on the slide
-tail(mdp[, -c(7:14)])
+head(mdp[, -c(8:14)]) # omit some columns to fit it on the slide
+tail(mdp[, -c(8:14)])
 @
 <<resetwidth120, echo = FALSE>>=
 options('width' = op)
@@ -68,7 +77,7 @@ options('width' = op)
 JointAI::md_pattern(NHANES)
 @
 \begin{center}
-\includegraphics[width = 0.8\linewidth]{figure/JointAI_mdpat.pdf}
+\includegraphics[width = 0.85\linewidth]{figure/JointAI_mdpat.pdf}
 \end{center}
 \end{frame}
 
@@ -80,6 +89,25 @@ VIM::aggr(NHANES, prop = TRUE, numbers = FALSE)
 \centering\includegraphics[width = 0.95\linewidth]{figure/VIM_mdpat.pdf}
 \end{frame}
 
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+<<naniar_vis_miss, eval = FALSE>>=
+naniar::vis_miss(NHANES)
+@
+\begin{center}
+\includegraphics[width = \linewidth]{figure/naniar_vis_miss.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+<<naniar_miss_upset, eval = FALSE>>=
+naniar::gg_miss_upset(NHANES[, 1:10], nsets = 10)
+@
+\begin{center}
+\includegraphics[width = \linewidth]{figure/naniar_miss_upset.pdf}
+\end{center}
+\end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
@@ -99,6 +127,7 @@ cbind(
 <<nmis, eval = FALSE>>=
 cbind("# NA" = sort(colSums(is.na(NHANES))),
       "% NA" = round(sort(colMeans(is.na(NHANES))) * 100, 2))
+# see also: naniar::miss_var_summary()
 @
 \mode<presentation>{\vspace*{-3ex}}
 \begin{columns}[t]
@@ -118,18 +147,6 @@ nmis[(1 + ceiling(nrow(nmis)/2)):nrow(nmis), ]
 \end{frame}
 
 
-\subsection{Data distributions}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-<<eval = FALSE>>=
-JointAI::plot_all(NHANES, nclass = 30)
-@
-
-<<NHANESplotall, fig.width = 8.5, fig.height = 4.78, out.width = "100%", echo = FALSE>>=
-par(mgp = c(2, 0.6, 0), mar = c(2, 3, 2.5, 0.5))
-JointAI::plot_all(NHANES, nclass = 30)
-@
-\end{frame}
 
 
 \subsection{Correlations \& patterns}
@@ -142,7 +159,7 @@ Corr <- cor(sapply(NHANES, as.numeric),
            use = "pairwise.complete.obs", method = "spearman")
 @
 
-<<corrplot syntax, eval = F, size = 'small'>>=
+<<corrplot syntax, eval = FALSE, size = 'small'>>=
 corrplot::corrplot(Corr, method = "square", type = "upper",
                    tl.col = "black")
 @
@@ -154,12 +171,9 @@ visualization, not as a statistical result!
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-<<corrplotplot, echo = F, out.width = "65%", crop = T, cache = T>>=
-# corrplot::corrplot.mixed(Corr, upper = 'square', lower = 'number',
-#                          lower.col = 'black', tl.cex = 0.6,
-#                          number.cex = 0.5, bg = 'transparent')
-corrplot::corrplot(Corr, method = "square", type = "upper", tl.col = "black")
-@
+\begin{center}
+\includegraphics[width = \textheight]{figure/corrplot.pdf}
+\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -772,9 +786,7 @@ With columns\\[2ex]
 
 \begin{frame}[fragile, allowframebreaks]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-<<convergence_imp2, fig.width = 10, fig.height = 5, fig.keep = "first">>=
-plot(imp2, layout = c(6, 3))
-@
+\includegraphics[width = \linewidth]{figure/convergence_imp2.pdf}
 \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -835,9 +847,10 @@ which can be modified analogously to their parent functions from the
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-<<densityplot1, fig.width = 9, fig.height = 5>>=
+<<densityplot_imp2, eval = FALSE>>=
 densityplot(imp2)
 @
+\includegraphics[width = \linewidth]{figure/densityplot_imp2.pdf}
 \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -852,10 +865,12 @@ imputed values of \Rstring{hgt} are smaller than the observed values.
 In some cases, differences in distributions can be explained by strata in the
 data, however, here, \Rstring{gender} does not explain the difference in
 observed and imputed values.
-
-<<densityplot2, fig.width = 9, fig.height = 5, out.width = "80%">>=
+\begin{center}
+<<densityplot2, eval = FALSE>>=
 densityplot(imp2, ~hgt|gender, plot.points = TRUE)
 @
+\includegraphics[width = 0.8\linewidth]{figure/densityplot_imp2_hgt.pdf}
+\end{center}
 \end{frame}
 
 % \begin{frame}[fragile]{\thesection. \insertsection}
@@ -872,17 +887,19 @@ densityplot(imp2, ~hgt|gender, plot.points = TRUE)
 % with(NHANES, table(race = race, "hgt missing" = is.na(hgt)))
 % @
 % \end{frame}
-% 
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% In that case, a \Rfct{stripplot} may be better suited. Here we can also split
-% the data for \Rstring{gender} and \Rstring{race}.
-% <<stripplot1, fig.width = 10, fig.height = 5, size = 'small'>>=
-% stripplot(imp2, hgt ~ race|gender, pch = c(1, 20),
-%           scales = list(x = list(rot = 45)))
-% @
-% \end{frame}
-% 
+ 
+\begin{frame}[fragile]{\thesection. \insertsection}
+\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+For (combinations of) variables with very few missing values a
+\Rfct{stripplot} may be better suited. Here we can also split
+the data for \Rstring{gender} and \Rstring{race}.
+<<stripplot1, eval = FALSE>>=
+stripplot(imp2, hgt ~ race|gender, pch = c(1, 20),
+          scales = list(x = list(rot = 45)))
+@
+\includegraphics[width = \linewidth]{figure/stripplot_imp2.pdf}
+\end{frame}
+
 % \begin{frame}[fragile]{\thesection. \insertsection}
 % \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 % Alternatively, observed and imputed data can be represented by box-and-whisker plots:
@@ -922,9 +939,10 @@ source(file.path(projdir, "Slides", "Rscripts", "propplot.R"))
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-<<propplot, warning = F, fig.width = 10, fig.height = 6, size = 'small'>>=
+<<propplot, eval = FALSE>>=
 propplot(imp2, strip.text = element_text(size = 14))
 @
+\includegraphics[width = \linewidth]{figure/propplot_imp2.pdf}
 \end{frame}
 
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -1207,7 +1225,7 @@ imp2combi <- ibind(imp2, imp2b)
 @
 
 <<ibindget, echo = F, size = 'small'>>=
-load(file.path(projdir, "Slides", "workspaces/imp2b.RData"))
+load(file.path("workspaces/imp2b.RData"))
 imp2combi <- ibind(imp2, imp2b)
 @
 
