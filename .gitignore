@@ -16,3 +16,5 @@ Slides/*.toc
 Slides/*.blg
 Slides/*.bcf
 Slides/*.xml
+Slides/*.out
+Slides/*.aux
