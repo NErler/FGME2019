@@ -1313,131 +1313,131 @@ To practice imputation with longitudinal data find the \textbf{html version} of 
 
 
 
-\section{Imputation of survival data}
-\subsection{Results from literature}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-White et al. \cite{White2009} found that when \blue{covariate effects and
-cumulative incidences are rather small},
-using \blue{$Z$, $D$ and $H_0(T)$}, and possibly an interaction term, as
-predictor variables in the imputation for $X$ in MICE may work satisfactorily.
-
-\bigskip
-
-However, in practice $H_0(T)$ is unspecified.
-
-\bigskip 
-
-If covariate effects $\beta_x$ and $\beta_z$ are small, \blue{$H_0(t)\approx H(t)$},
-which can be approximated by the \blue{Nelson-Aalen estimator}.
-
-\bigskip
-
-However, some \blue{bias towards the null} should be expected when covariates have large
-effects.
-\end{frame}
-
-
-\subsection{R package mice}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-
-In \textbf{mice}, \Rfct{nelsonaalen} can be used to
-\blue{calculate the Nelson-Aalen estimator}, to use it as covariate in the
-imputation.
-
-<<mice_surv01, size = 'small', eval = FALSE>>=
-survdat$H0 <- nelsonaalen(survdat, timevar = Time, statusvar = event)
-@
-
-Then, we can prepare the imputation using the same steps as in previous examples:
-<<mice_surv02, size = 'small', eval = FALSE>>=
-# setup run
-imp0 <- mice(survdat, maxit = 0)
-meth <- imp0$method
-pred <- imp0$predictorMatrix
-
-# specify normal imputation for continuous covariates
-meth[c("x1", "x3")] <- "norm"
-
-# remove event time from predictor (high correlation with H0)
-pred[, "Time"] <- 0
-@
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-With the modified arguments \Rarg{method} and \Rarg{predictorMatrix} we run
-the imputation:
-<<mice_surv03, size = 'small', eval = FALSE>>=
-survimp <- mice(survdat, maxit = 10, method = meth,
-                predictorMatrix = pred, printFlag = FALSE)
-@
-
-
-To obtain the pooled results, we first fit the model of interest
-<<mice_surv2, size = 'small', eval = FALSE>>=
-library(survival)
-cox_mice <- with(survimp, coxph(Surv(Time, event) ~ x1 + x2 + x3))
-@
-
-and pool and summarize the results.
-<<size = 'small', warning = FALSE, eval = FALSE>>=
-res_mice_surv <- summary(pool(cox_mice), conf.int = TRUE)
-@
-\end{frame}
-
-
-
-\subsection{R package JointAI}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-
-\textbf{JointAI} has implemented two models for right-censored surival data.
-The Cox PH model and a parametric Weibull model.
-
-The Cox model is implemented in counting process notation and may take longer
-to calculate when there are many event times.
-
-<<eval = FALSE>>=
-JointAI_cox <- coxph_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
-                          n.iter = 1500)
-JointAI_surv <- survreg_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
-                          n.iter = 1500)
-@
-\end{frame}
-
-
-\subsection{Comparison of results}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-\includegraphics[width = \linewidth]{figure/p_comp_surv.pdf}
-
-The naive mice approach, and mice using the Nelson-Aalen estimator give very
-biased results for the effects of $x1$ and $x2$, but performed acceptably well
-for $x3$.
-
-\bigskip
-
-Note that the \blue{true effects} (log HR) of $x1$ and $x2$ are \blue{very large}
-(-2 and 2.5, respectively),
-and represent the setting where the approximation by the Nelson-Aalen estimate
-is \blue{expected to be biased}.
-\end{frame}
-
-\begin{frame}
-\begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
-\usebeamerfont{part title}
-Practical
-\end{beamercolorbox}
-
-\vfill
-
-To practice imputation with survival data find the \textbf{html version} of the practical here:
-\begin{block}{}
-\centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/misurv/EP16_MIsurv.html}
-\end{block}
-\end{frame}
+% \section{Imputation of survival data}
+% \subsection{Results from literature}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% White et al. \cite{White2009} found that when \blue{covariate effects and
+% cumulative incidences are rather small},
+% using \blue{$Z$, $D$ and $H_0(T)$}, and possibly an interaction term, as
+% predictor variables in the imputation for $X$ in MICE may work satisfactorily.
+% 
+% \bigskip
+% 
+% However, in practice $H_0(T)$ is unspecified.
+% 
+% \bigskip 
+% 
+% If covariate effects $\beta_x$ and $\beta_z$ are small, \blue{$H_0(t)\approx H(t)$},
+% which can be approximated by the \blue{Nelson-Aalen estimator}.
+% 
+% \bigskip
+% 
+% However, some \blue{bias towards the null} should be expected when covariates have large
+% effects.
+% \end{frame}
+% 
+% 
+% \subsection{R package mice}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% In \textbf{mice}, \Rfct{nelsonaalen} can be used to
+% \blue{calculate the Nelson-Aalen estimator}, to use it as covariate in the
+% imputation.
+% 
+% <<mice_surv01, size = 'small', eval = FALSE>>=
+% survdat$H0 <- nelsonaalen(survdat, timevar = Time, statusvar = event)
+% @
+% 
+% Then, we can prepare the imputation using the same steps as in previous examples:
+% <<mice_surv02, size = 'small', eval = FALSE>>=
+% # setup run
+% imp0 <- mice(survdat, maxit = 0)
+% meth <- imp0$method
+% pred <- imp0$predictorMatrix
+% 
+% # specify normal imputation for continuous covariates
+% meth[c("x1", "x3")] <- "norm"
+% 
+% # remove event time from predictor (high correlation with H0)
+% pred[, "Time"] <- 0
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% With the modified arguments \Rarg{method} and \Rarg{predictorMatrix} we run
+% the imputation:
+% <<mice_surv03, size = 'small', eval = FALSE>>=
+% survimp <- mice(survdat, maxit = 10, method = meth,
+%                 predictorMatrix = pred, printFlag = FALSE)
+% @
+% 
+% 
+% To obtain the pooled results, we first fit the model of interest
+% <<mice_surv2, size = 'small', eval = FALSE>>=
+% library(survival)
+% cox_mice <- with(survimp, coxph(Surv(Time, event) ~ x1 + x2 + x3))
+% @
+% 
+% and pool and summarize the results.
+% <<size = 'small', warning = FALSE, eval = FALSE>>=
+% res_mice_surv <- summary(pool(cox_mice), conf.int = TRUE)
+% @
+% \end{frame}
+% 
+% 
+% 
+% \subsection{R package JointAI}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% 
+% \textbf{JointAI} has implemented two models for right-censored surival data.
+% The Cox PH model and a parametric Weibull model.
+% 
+% The Cox model is implemented in counting process notation and may take longer
+% to calculate when there are many event times.
+% 
+% <<eval = FALSE>>=
+% JointAI_cox <- coxph_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
+%                           n.iter = 1500)
+% JointAI_surv <- survreg_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
+%                           n.iter = 1500)
+% @
+% \end{frame}
+% 
+% 
+% \subsection{Comparison of results}
+% \begin{frame}[fragile]{\thesection. \insertsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \includegraphics[width = \linewidth]{figure/p_comp_cox.pdf}
+% 
+% The naive mice approach, and mice using the Nelson-Aalen estimator give very
+% biased results for the effects of $x1$ and $x2$, but performed acceptably well
+% for $x3$.
+% 
+% \bigskip
+% 
+% Note that the \blue{true effects} (log HR) of $x1$ and $x2$ are \blue{very large}
+% (-2 and 2.5, respectively),
+% and represent the setting where the approximation by the Nelson-Aalen estimate
+% is \blue{expected to be biased}.
+% \end{frame}
+% 
+% \begin{frame}
+% \begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
+% \usebeamerfont{part title}
+% Practical
+% \end{beamercolorbox}
+% 
+% \vfill
+% 
+% To practice imputation with survival data find the \textbf{html version} of the practical here:
+% \begin{block}{}
+% \centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/misurv/EP16_MIsurv.html}
+% \end{block}
+% \end{frame}
 
 
 
