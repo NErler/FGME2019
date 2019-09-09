@@ -69,7 +69,7 @@ p_qdr3 <- p_qdr0 +
                         labels = c("fit on complete", "fit on imputed")) +
   theme(legend.key.width = unit(1.2,"cm"),
         legend.title = element_blank(),
-        legend.position = c(0.15, 0.19),
+        legend.position = c(0.17, 0.19),
         legend.spacing.y = unit(-0.3, "lines")
   )
 
