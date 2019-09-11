@@ -1025,7 +1025,7 @@ The averaged CI's (marked in red) underestimate the total variation
 
 
 \begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
+% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 The most commonly used method to pool results from analyses of multiply imputed
 data was introduced by Rubin \cite{Rubin1987}, hence \blue{Rubin's Rules}.
 

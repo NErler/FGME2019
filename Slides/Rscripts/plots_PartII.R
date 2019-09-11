@@ -1,3 +1,5 @@
+library(mice)
+
 load(file.path('Slides', 'data', "NHANES_for_lectures.RData"))
 NHANES <- subset(NHANES, select = -DBP)
 
