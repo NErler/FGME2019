@@ -246,14 +246,14 @@ Missingness depends (also) on unobserved data
 \begin{column}{0.35\linewidth}
 \vspace*{2ex}
 \onslide<2->{
-\parbox{\linewidth}{\small
+\parbox{\linewidth}{\small \color{gray}
 questionnaire got lost in mail
 }}
 
 \vspace*{8ex}
 
 \onslide<3->{
-\parbox{\linewidth}{\small
+\parbox{\linewidth}{\small \color{gray}
 overweight participants are less likely to report their chocolate consumption 
 (and we know their weight)
 }}
@@ -261,7 +261,7 @@ overweight participants are less likely to report their chocolate consumption
 \vspace*{8ex}
 
 \onslide<4->{
-\parbox{\linewidth}{\small
+\parbox{\linewidth}{\small \color{gray}
 overweight participants are less likely to report their weight
 }}
 \end{column}
@@ -352,12 +352,13 @@ $\hat x_{i2} = \hat\beta_0 + \hat\beta_1 x_{i1} + \hat\beta_2 x_{i3} + \hat\beta
 }
 \end{column}
 \begin{column}{0.45\textwidth}
+\only<beamer>{
 \only<1>{
 \includegraphics[width = \linewidth]{figure/emptyplot.pdf}
 }
 \only<2>{
 \includegraphics[width = \linewidth]{figure/regimp_movie0034.png}
-}
+}}
 \only<3->{
 \animategraphics[loop, autoplay, width = \linewidth]{10}{figure/regimp_movie00}{01}{49}
 }
@@ -451,9 +452,12 @@ We assume that the \blue{data have a distribution}, where
 }
 \only<2>{
 \animategraphics[loop, autoplay, width = \linewidth]{1}{figure/ranerr_movie00}{01}{10}
-}}
+}
 \only<3>{
 \includegraphics[width = \linewidth]{figure/ranerrimpsplot.pdf}
+}}
+\only<handout>{
+\animategraphics[loop, autoplay, width = \linewidth]{1}{figure/ranerr_movie00}{01}{10}
 }
 
 \end{column}
@@ -494,7 +498,7 @@ Both require the assumption of a \blue{distribution for the missing values}.
 \begin{itemize}
 \item semi-parametric approach to imputation
 \item developed for settings where the normal distribution is not a
-good choice for the predictive distribution.\cite{Little1988, Rubin1986}
+good choice for the predictive distribution \cite{Little1988, Rubin1986}
 \end{itemize}
 
 \bigskip
