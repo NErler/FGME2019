@@ -1,36 +1,13 @@
-% \begin{frame}[allowframebreaks=0.75]{Outline of Part III}
-% \tableofcontents[part=3, sections={12-13}]
-% \framebreak
-% \setlength{\parskip}{0pt}
-% \vspace*{-6ex}
-% \begin{columns}
-% \begin{column}{0.45\linewidth}
-% \tableofcontents[part=3,sections={14}]
-% \end{column}
-% \begin{column}{0.45\linewidth}
-% \tableofcontents[part=3,sections={15-17}]
-% \end{column}
-% \end{columns}
-% \vspace*{-6ex}
-% \end{frame}
 
 <<packages part3, echo = FALSE>>=
 library(knitr)
 library(kableExtra)
 
-# library(plyr)
-# library(RColorBrewer)
-# library(magrittr)
-
-# library(ggplot2)
 library(splines)
-# library(dplyr)
 library(mice)
 library(miceadds)
 library(lme4)
 library(survival)
-
-# source(file.path(projdir, "Slides", "Rscripts/plots_PartIII.R"))
 
 @
 
@@ -319,7 +296,7 @@ In some settings \blue{imputation in wide format} may be possible.
 \begin{columns}[onlytextwidth]
 \begin{column}{0.54\linewidth}
 \only<handout>{
-\centering\includegrahics[width = \linewidth]{figure/plong1_1b.pdf}
+\centering\includegraphics[width = \linewidth]{figure/plong1_1b.pdf}
 }
 \only<beamer>{
 \only<1>{
@@ -415,64 +392,6 @@ resulting in invalid imputations and biased results.}
 \end{frame}
 
 
-
-\subsection{Survival data}
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-In \blue{survival analysis}, the aim is to estimate the effect of covariates on
-the \blue{time until an event} of interest happens.
-
-\bigskip
-
-\pause
-Commonly used method: \blue{Cox proportional hazards model}
-
-$$h(t) = h_0(t) \exp(x \beta_x + z\beta_z),$$
-
-\begin{itemize}
-\item $h(t)$: hazard = the instantaneous risk of an event at time $t$,
-      given that the event has not occurred until time $t$
-\item $h_0(t)$: unspecified baseline hazard
-\item \blue{$x$} and \blue{$z$}: \blue{incomplete} and \blue{complete}
-covariates, respectively
-\end{itemize}
-
-\bigskip
-
-\pause
-\blue{Survival outcomes} are usually represented by the \blue{observed event
-time $T$} and the \blue{event indicator $D$} ($D = 1$: event, $D = 0$: censored).
-\end{frame}
-
-\begin{frame}[fragile, label=survivalmice]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-\blue{Naive use of MICE}
-\begin{itemize}
-\item $T$ and $D$ are treated just like any other variable.
-\item The resulting imputation model for $X$ would have the form
-$$p(x \mid T, D, \mathbf z) = \theta_0 + \theta_1 T + \theta_2 D + \theta_3 z + \ldots.$$
-\end{itemize}
-
-\bigskip
-
-\pause
-The \blue{correct conditional distribution} of $x$ given the other variables is, however,
-\begin{multline}
-\log p(x\mid T, D, z) = \log p(x\mid z) + D(\beta_x x + \beta_z z) - \\
-H_0(T)\exp(\beta_x x+\beta_z z) + const.,\nonumber
-\end{multline}
-where $H_0(T)$ is the cumulative baseline hazard. \cite{White2009}
-\end{frame}
-
-\begin{frame}[fragile]{\thesection. \insertsection}
-\framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Using the naively assumed imputation model can lead to \blue{severe bias}:
-\centering\includegraphics[width = 0.9\linewidth]{figure/p_compsurv.pdf}
-(Results from MICE imputation with two incomplete normal and one incomplete binary covariate.)
-\end{frame}
-
-
-
 \section{Requirements for MICE to work (well)}
 \subsection{Joint and conditional distributions}
 \begin{frame}[fragile]{\thesection. \insertsection}
@@ -503,25 +422,6 @@ by its full conditional distributions.
 \onslide<2>{In MICE, the full conditionals are not derived from the joint distribution:\\
 we directly specify the full conditionals and hope a joint distribution exists.}
 \end{frame}
-
-
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% The \blue{uncertainty about whether a joint distribution exists} for the specified
-% set of imputation models is often considered to be mainly a theoretical problem.
-% 
-% \bigskip
-% 
-% In practice, violations only have little impact on results in many applications.
-% 
-% \bigskip
-% 
-% \pause
-% However, as we have seen in the examples on the previous slides,
-% there are \blue{settings where the direct specification} of the full
-% conditionals/imputation models \blue{may lead to problems}, causing biased results.
-% 
-% \end{frame}
 
 
 \subsection{Some conditions and definitions}
@@ -559,33 +459,6 @@ The imputation model is compatible with the analysis model.
       (which is a requirement in any standard analysis).
 \end{itemize}
 \end{frame}
-
-
-\subsection{Why imputation with MICE can go wrong}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% 
-% \blue{What went wrong in our previous examples?}
-% 
-% \bigskip\pause
-% 
-% When incomplete variables have \blue{non-linear associations} with the outcome,
-% or with each other, the requirement(s) of \blue{\textit{compatibility} and/or
-% \textit{congeniality} are violated}.
-% 
-% \bigskip\pause
-% 
-% \blue{Omission, or inadequate inclusion, of the outcome} may result in \blue{MNAR} missing
-% mechanisms. The same is the case when other relevant predictor variables
-% are not used as predictor variables in the imputation.
-% \bigskip\pause
-% 
-% Furthermore, \blue{omission of variables} may lead to \blue{mis-specified models},
-% however, models may also be mis-specified when all relevant covariates are included,
-% but \blue{distributional assumptions} or the specified \blue{form of associations}
-% are incorrect.
-% \end{frame}
-
 
 
 \section{Alternatives to MICE}
@@ -717,121 +590,6 @@ is used to estimate parameters and sample imputed values.}
 \end{frame}
 
 
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \begin{columns}
-% \begin{column}{0.55\linewidth}
-% \blue{Advantages:}
-% \begin{itemize}
-% \item \blue{flexible} with regards to outcome type
-% \item univariate conditional distributions of incomplete covariates can be chosen
-% according to \blue{type of variable}
-% \item \blue{non-linear associations} and interactions can be taken into account
-% \item assures \blue{congeniality and compatible imputation models}
-% \end{itemize}
-% \end{column}
-% \begin{column}{0.45\linewidth}
-% \blue{Disadvantages:}
-% \begin{itemize}
-% \item separate models need to be specified per incomplete variable: \blue{takes more time
-% and consideration}
-% \item the joint distribution is of unknown form and sampling may be more \blue{computationally intensive}
-% \end{itemize}
-% \end{column}
-% \end{columns}
-% \end{frame}
-
-
-% \subsection{Some relevant R packages}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% 
-% For complex settings there are alternatives to \blue{mice}:
-% 
-% For example the \textsf{R} packages \blue{JointAI}, \blue{smcfcs} and \blue{jomo}.
-% 
-% \vfill
-% 
-% \begin{itemize}\itemsep2ex
-% \item<2-> they use \blue{Bayesian methodology} to impute values
-% \item<3-> \blue{jomo} and \blue{smcfcs} perform \blue{multiple imputation};\\
-%       the imputed datasets that can then be analysed the same way data imputed
-%       by \textbf{mice} would be analysed.
-% \item<4-> \blue{JointAI} works \blue{fully Bayesian}
-%       \begin{itemize}
-%       \item performs analysis and imputation simultaneously
-%       \item \blue{\ding{225}} results from the analysis model of interest are
-% obtained directly
-%       \end{itemize}
-% \end{itemize}
-% \end{frame}
-% 
-% \subsection{R package smcfcs}
-% \begin{frame}{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \href{https://cran.r-project.org/package=smcfcs}{\blue{Substantive Model Compatible Fully Conditional Specification}},\\
-% a hybrid approach between FCS and sequential factorization \cite{Bartlett2015}
-% 
-% \bigskip
-% \textbf{smcfcs} (version 1.4.0) can impute incomplete covariates in
-% \begin{columns}
-% \begin{column}{0.4\linewidth}
-% \begin{itemize}
-% \item linear regression
-% \item logistic regression
-% \item poisson regression
-% \item Weibull survival models
-% \end{itemize}
-% \end{column}
-% \begin{column}{0.5\linewidth}
-% \begin{itemize}
-% \item Cox proportional hazard models
-% \item competing risk survival models
-% \item nested case control studies
-% \item case cohort studies
-% \end{itemize}
-% \end{column}
-% \end{columns}
-% \vspace*{3ex}
-% while ensuring compatibility between analysis model and imputation models.
-% 
-% \bigskip
-% 
-% For more information see the help files and the
-% \href{https://cran.r-project.org/package=smcfcs/vignettes/smcfcs-vignette.html}%
-% {vignette}.
-% \end{frame}
-% 
-% 
-% 
-% 
-% 
-% \subsection{R package jomo}
-% \begin{frame}{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \href{https://cran.r-project.org/package=jomo}{\blue{JOint MOdel imputation}} using the multivariate normal approach,\\
-% with \blue{extensions to assure compatibility} between analysis and imputation models. \cite{Carpenter2012}
-% 
-% \bigskip
-% 
-% \textbf{jomo} (version 2.6-7) can handle
-% \begin{itemize}
-% \item linear regression
-% \item generalized linear regression
-% \item proportional odds (ordinal) probit regression
-% \item linear mixed models
-% \item generalized linear mixed models
-% \item (ordinal) cumulative link mixed models
-% \item Cox proportional hazards models.
-% \end{itemize}
-% 
-% For more info see the \href{https://cran.r-project.org/package=jomo}{help file}.
-% \end{frame}
-% 
-% 
-
-
-
 \subsection{R package JointAI}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
@@ -877,7 +635,7 @@ installed from \url{https://sourceforge.net/projects/mcmc-jags/files/}.
 
 \bigskip
 
-\blue{JointAI} can be installed from CRAN or \href{https://github.com/nerler/JointAI}{GitHub} (development version containing bug fixes and other improvements)
+\blue{JointAI} can be installed from CRAN or \href{https://github.com/nerler/JointAI}{GitHub}:
 <<eval = F, size = 'small'>>=
 install.packages("devtools")
 devtools::install_github("NErler/JointAI")
@@ -1078,9 +836,10 @@ Practical
 
 \vfill
 
-To practice imputation with non-linear forms or interaction terms find the \textbf{html version} of the practical here:\\
+To practice imputation with non-linear forms or interaction terms find 
+the instructions for the practical here:\\
 \begin{block}{}
-\centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/minonlin/EP16_MInonlin.html}
+\centering\url{https://nerler.com/teaching/fgme2019/minonlin}
 \end{block}
 \end{frame}
 
@@ -1305,187 +1064,9 @@ Practical
 
 \vfill
 
-To practice imputation with longitudinal data find the \textbf{html version} of the practical here:
+To practice imputation with longitudinal data find 
+the instructions for the practical here:\\
 \begin{block}{}
-\centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/milong/EP16_MIlong.html}
+\centering\url{https://nerler.com/teaching/fgme2019/milong}
 \end{block}
 \end{frame}
-
-
-
-% \section{Imputation of survival data}
-% \subsection{Results from literature}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% White et al. \cite{White2009} found that when \blue{covariate effects and
-% cumulative incidences are rather small},
-% using \blue{$Z$, $D$ and $H_0(T)$}, and possibly an interaction term, as
-% predictor variables in the imputation for $X$ in MICE may work satisfactorily.
-% 
-% \bigskip
-% 
-% However, in practice $H_0(T)$ is unspecified.
-% 
-% \bigskip 
-% 
-% If covariate effects $\beta_x$ and $\beta_z$ are small, \blue{$H_0(t)\approx H(t)$},
-% which can be approximated by the \blue{Nelson-Aalen estimator}.
-% 
-% \bigskip
-% 
-% However, some \blue{bias towards the null} should be expected when covariates have large
-% effects.
-% \end{frame}
-% 
-% 
-% \subsection{R package mice}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% 
-% In \textbf{mice}, \Rfct{nelsonaalen} can be used to
-% \blue{calculate the Nelson-Aalen estimator}, to use it as covariate in the
-% imputation.
-% 
-% <<mice_surv01, size = 'small', eval = FALSE>>=
-% survdat$H0 <- nelsonaalen(survdat, timevar = Time, statusvar = event)
-% @
-% 
-% Then, we can prepare the imputation using the same steps as in previous examples:
-% <<mice_surv02, size = 'small', eval = FALSE>>=
-% # setup run
-% imp0 <- mice(survdat, maxit = 0)
-% meth <- imp0$method
-% pred <- imp0$predictorMatrix
-% 
-% # specify normal imputation for continuous covariates
-% meth[c("x1", "x3")] <- "norm"
-% 
-% # remove event time from predictor (high correlation with H0)
-% pred[, "Time"] <- 0
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% With the modified arguments \Rarg{method} and \Rarg{predictorMatrix} we run
-% the imputation:
-% <<mice_surv03, size = 'small', eval = FALSE>>=
-% survimp <- mice(survdat, maxit = 10, method = meth,
-%                 predictorMatrix = pred, printFlag = FALSE)
-% @
-% 
-% 
-% To obtain the pooled results, we first fit the model of interest
-% <<mice_surv2, size = 'small', eval = FALSE>>=
-% library(survival)
-% cox_mice <- with(survimp, coxph(Surv(Time, event) ~ x1 + x2 + x3))
-% @
-% 
-% and pool and summarize the results.
-% <<size = 'small', warning = FALSE, eval = FALSE>>=
-% res_mice_surv <- summary(pool(cox_mice), conf.int = TRUE)
-% @
-% \end{frame}
-% 
-% 
-% 
-% \subsection{R package JointAI}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% 
-% \textbf{JointAI} has implemented two models for right-censored surival data.
-% The Cox PH model and a parametric Weibull model.
-% 
-% The Cox model is implemented in counting process notation and may take longer
-% to calculate when there are many event times.
-% 
-% <<eval = FALSE>>=
-% JointAI_cox <- coxph_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
-%                           n.iter = 1500)
-% JointAI_surv <- survreg_imp(Surv(Time, event) ~ x1 + x2 + x3, data = survdat,
-%                           n.iter = 1500)
-% @
-% \end{frame}
-% 
-% 
-% \subsection{Comparison of results}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% \includegraphics[width = \linewidth]{figure/p_comp_cox.pdf}
-% 
-% The naive mice approach, and mice using the Nelson-Aalen estimator give very
-% biased results for the effects of $x1$ and $x2$, but performed acceptably well
-% for $x3$.
-% 
-% \bigskip
-% 
-% Note that the \blue{true effects} (log HR) of $x1$ and $x2$ are \blue{very large}
-% (-2 and 2.5, respectively),
-% and represent the setting where the approximation by the Nelson-Aalen estimate
-% is \blue{expected to be biased}.
-% \end{frame}
-% 
-% \begin{frame}
-% \begin{beamercolorbox}[sep=8pt,center,wd=\textwidth]{part title}
-% \usebeamerfont{part title}
-% Practical
-% \end{beamercolorbox}
-% 
-% \vfill
-% 
-% To practice imputation with survival data find the \textbf{html version} of the practical here:
-% \begin{block}{}
-% \centering\url{https://nerler.github.io/EP16_Multiple_Imputation/practical/misurv/EP16_MIsurv.html}
-% \end{block}
-% \end{frame}
-
-
-
-\mode<article>{
-\section*{Summary \& Conclusion of Part III}
-}
-\begin{frame}[allowframebreaks]{Summary \& Conclusion of Part III}
-\begin{itemize}
-\item MICE requires \blue{congenial \& compatible imputation models} to work well.
-\item When this is not the case, (naive) use of MICE can lead to \blue{biased results}.
-\item Common settings that require special attention are
-      \begin{itemize}
-      \item \blue{non-linear functional forms \& interaction terms}
-      \item \blue{longitudinal data}
-      \item \blue{survival data}
-      \end{itemize}
-\framebreak
-\item When using the package \textbf{mice}, there are choices that can \blue{reduce bias}
-      \begin{itemize}
-      \item \Rarg{pmm} tends to be less biased than \Rarg{norm} for interactions or non-linear associations
-      \item JAV approach reduces bias in settings with interactions or non-linear associations
-      \item \blue{special 2-level imputation methods} are available for longitudinal data
-      \item The \blue{Nelson-Aalen estimator} can be used instead of the time variable
-            for imputing survival data when effects are not too large.
-      \end{itemize}
-\item Generally, \blue{problems} are more severe when
-      \begin{itemize}
-      \item \blue{proportions of missing values are large},
-      \item effect sizes are large,
-      \item little other \blue{covariate information} is available.
-      \end{itemize}
-      (Note that in the examples we had all of the above.)
-\framebreak
-\item In settings where MICE may not provide valid imputations,
-      \blue{alternative approaches} are available and should be considered.
-\item R packages that provide such alternative approaches are for example:
-      \begin{itemize}
-      \item \blue{JointAI} (non-linear, longitudinal \& survival)
-      \item \blue{smcfcs} (non-linear \& survival)
-      \item \blue{jomo} (non-linear, longitudinal \& survival)
-      \end{itemize}
-\item These packages are very young.
-      \begin{itemize}
-      \item Hence, they may still have some problems.\\
-            \blue{\ding{225}} \blue{Use them carefully!} (and email the maintainer about problems)
-      \item They are under \blue{active development}, so resolutions of bugs and
-      features are frequently added.
-      \end{itemize}
-\end{itemize}
-\end{frame}
-
