@@ -108,13 +108,16 @@ variables) this is \blue{not feasible}.\cite{Buuren2012}
 For large datasets a possible strategy is to
 \begin{itemize}
 \item Include all \blue{variables used in the analysis model(s)} (including the outcome!).
+\pause
 \item Include auxiliary variables if they are \blue{strong predictors of missingness}.
 \item Include auxiliary variables if they have \blue{strong associations with
       the incomplete variables}.
+\pause      
 \item Use \blue{auxiliary variables only if they do not have too many missing values} themselves
       (and are observed for most of the incomplete cases of the variable of interest).
 \item Use \blue{auxiliary variables} only in those imputation models for which they are \blue{relevant}
       (and exclude them for others using the predictor matrix).
+\pause      
 \item Calculate \blue{summary scores} from multiple items referring to the same concept
       and use the summary score as predictor variable.
 \end{itemize}
@@ -169,9 +172,9 @@ When there are no auxiliary variables, imputation and analysis model are equal.
 
 \textbf{Exception:}
 \begin{itemize}
-\item When very strong auxiliary variables are available.
+\item When very \blue{strong auxiliary variables} are available.
 \item Outcomes may be imputed when one imputation is performed for
-      several analysis models, because not imputing the outcome(s) would mean
+      \blue{several analysis models}, because not imputing the outcome(s) would mean
       \begin{itemize}
       \item excluding cases with missing outcome(s) from the imputation, or
       \item excluding the outcome variable(s) as predictor(s).
@@ -212,14 +215,18 @@ Moreover
       \item use auxiliary information
       \item use the most detailed version of variables if possible
       \end{itemize}
+\pause      
 \item \blue{Avoid feedback} from derived variables to their originals.
+\item Think carefully how to handle variables that are derived from other variables.
+\item Consider the impact the \blue{visit sequence} may have.
+\pause
 \item \blue{Imputation models must fit the data}\\
       (correct assumption of error distribution and functional forms and
       possible interactions of predictor variables).
-\item Think carefully how to handle variables that are derived from other variables.
-\item Consider the impact the \blue{visit sequence} may have.
+\pause
 \item Choose an appropriate \blue{number of imputations}.
 \item Make sure the imputation algorithm has \blue{converged}.
+\pause
 \item Use \blue{common sense} when evaluating if the imputed values are plausible.
 \end{itemize}
 \end{frame}
@@ -232,7 +239,7 @@ Moreover
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 <<getallpkgs, echo = FALSE>>=
- getPackagesWithTitle <- function() {
+getPackagesWithTitle <- function() {
    chooseCRANmirror(graphics = FALSE, ind = 1)
      contrib.url(getOption("repos")["CRAN"], "source")
      description <- sprintf("%s/web/packages/packages.rds",
@@ -259,7 +266,6 @@ res <- sapply(words, function(x) {
 # allpkgs[res$incomplete$Title, ]
 #
 res2 <- lapply(lapply(res, unlist), unique)
-
 @
 
 
@@ -278,8 +284,9 @@ only option to perform imputation!}
 % \begin{frame}[fragile]{\thesection. \insertsection}
 % \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 
-\bigskip 
+\vfill 
 
+\pause
 \blue{CRAN Task View on Missing Data:}
 
 \href{https://cran.r-project.org/web/views/MissingData.html}{https://cran.r-project.org/web/views/MissingData.html}
@@ -295,14 +302,11 @@ only option to perform imputation!}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 We have focussed on a few imputation methods that cover the most common
-types of data
-% (\Rstring{"norm", "pmm", "midastouch", "logreg", "polyeg", "polr",
-% "2lonly.norm", "2lonly.pmm"}),
-but there are many more methods implemented.
+types of data but there are many more methods implemented.
 
 \bigskip
 
-Imputation methods implemented in the \textbf{mice} package:\vspace*{-1ex}
+Imputation methods implemented in the \blue{mice} package:\vspace*{-1ex}
 <<getmicemeths, echo = FALSE, warning = FALSE, results = 'asis'>>=
 used <- paste0("mice.impute.",
                 c("norm", "pmm", "midastouch", "logreg", "polyreg", "polr",
@@ -330,7 +334,7 @@ methtab1 %>%
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Imputation methods implemented in the \textbf{miceadds} package:
+Imputation methods implemented in the \blue{miceadds} package:
 <<getmiceaddsmeths, echo = FALSE, warning = FALSE>>=
 miceaddsmeth <- sort(grep("mice.impute", getNamespaceExports("miceadds"), value = TRUE))
 methtab2 <- matrix(data = c(gsub("_", "\\_", miceaddsmeth, fixed = TRUE),
@@ -346,7 +350,7 @@ methtab2 %>%
 
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-Imputation methods implemented in the \textbf{micemd} package:
+Imputation methods implemented in the \blue{micemd} package:
 <<getmicemdmeths, echo = FALSE, warning = FALSE>>=
 micemdmeth <- sort(grep("mice.impute", getNamespaceExports("micemd"), value = TRUE))
 methtab2 <- matrix(data = c(micemdmeth, rep(NA, length(micemdmeth) %% 2)),
@@ -359,7 +363,7 @@ methtab2 %>%
 @
 \end{frame}
 
-\subsection{Packages worth mentioning}
+\subsection{Additional packages worth mentioning}
 \begin{frame}[fragile]{\thesection. \insertsection}
 \framesubtitle{\thesection.\thesubsection. \insertsubsection}
 Besides \blue{JointAI}, there are more alternatives for imputation in complex settings:
@@ -371,45 +375,3 @@ Besides \blue{JointAI}, there are more alternatives for imputation in complex se
 \end{itemize}
 \end{frame}
  
-% \subsection{Imputation in other software}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% In this second half of the course, we have focused on (multiple) imputation
-% using \textsf{R}.
-% 
-% \bigskip
-% 
-% Naturally, \textsf{R} is not the only statistical software that can perform
-% multiple imputation.
-% \begin{itemize}
-% \item \blue{Stata, SAS and MPLUS} provide packages/functions to perform multiple
-%       imputation and pool the results.
-% \item There are macros and additional packages available, e.g.,
-%       \blue{smcfcs} is implemented for \blue{Stata} as well
-% \item \blue{SPSS} provides some functionality to perform MI
-% \end{itemize}
-% \end{frame}
-
-% \subsection{Other approaches to handle missing values}
-% \begin{frame}[fragile]{\thesection. \insertsection}
-% \framesubtitle{\thesection.\thesubsection. \insertsubsection}
-% Finally, we should not forget that
-% \blue{MICE is not the only method to handle missing values}.
-% 
-% \bigskip
-% 
-% Besides MICE, \blue{multiple imputation} can be performed in a
-% \blue{joint model approach} (as for instance implemented in the \textsf{R}
-% package \textbf{jomo}).
-% 
-% \bigskip
-% 
-% Furthermore,
-% \begin{itemize}
-% \item \blue{direct likelihood methods},
-% \item \blue{fully Bayesian methods} (as implemented in \textbf{JointAI}), or
-% \item \blue{weighted estimating equations}
-% \end{itemize}
-% are valid alternative approaches when data are incomplete.
-% 
-% \end{frame}
