@@ -4,6 +4,8 @@ This repository contains slides and materials for the [FGME 2019](http://www.fgm
 [workshop 3](http://www.fgme2019.de/index.php?id=15).
 
 Slides are available for download [here](https://github.com/NErler/FGME2019/raw/master/Slides/MICourse_Slides.pdf)
+and the handout version (slides but without stepwise revealing the content)
+can be downloaded [here](https://github.com/NErler/FGME2019/raw/master/Slides/MICourse_Handout.pdf)
 
 For the practicals, please download and install
 
@@ -22,6 +24,5 @@ and include [ggplot2](https://CRAN.R-project.org/package=ggplot2),
 [plyr](https://CRAN.R-project.org/package=plyr)
 
 The packages
-[nlme](https://CRAN.R-project.org/package=nlme),
-[survival](https://CRAN.R-project.org/package=survival) and 
+[nlme](https://CRAN.R-project.org/package=nlme) and
 [splines](https://CRAN.R-project.org/package=splines) are automatically installed with R.
